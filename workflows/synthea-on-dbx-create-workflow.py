@@ -48,7 +48,7 @@ Please note that is the catalog, schema, or Volume do not exist, the workflow no
 
 # DBTITLE 1,Databricks SDK workspace initialization
 from databricks.sdk import WorkspaceClient
-from databricks.sdk.service.jobs import Source, Task, NotebookTask, TaskEmailNotifications, TaskNotificationSettings, WebhookNotifications, RunIf, QueueSettings, JobParameter, JobRunAs
+from databricks.sdk.service.jobs import Source, Task, NotebookTask, TaskEmailNotifications, TaskNotificationSettings, WebhookNotifications, RunIf, QueueSettings, JobParameter, JobRunAs, JobCluster
 from databricks.sdk.service.compute import ClusterSpec, DataSecurityMode, RuntimeEngine
 
 w = WorkspaceClient()
@@ -153,6 +153,136 @@ else:
 
 # COMMAND ----------
 
+# task 0: syntha_set_up_check
+synthea_set_up_check = Task(
+  task_key = "synthea_set_up_check"
+  ,description = "Check to see if the synthea jar and configuration files have been set up"
+  ,run_if = RunIf("ALL_SUCCESS")
+  ,job_cluster_key = job_cluster_key
+  ,notebook_task = NotebookTask(
+    notebook_path = f"/Workspace/Users/{current_user.user_name}/synthea-on-dbx/notebooks/00-setup-notebooks/0.0-set-up-check"
+    ,source = Source("WORKSPACE")
+    ,base_parameters = dict("")
+  )
+  ,timeout_seconds = 0
+  ,email_notifications = TaskEmailNotifications()
+  ,notification_settings = TaskNotificationSettings(
+    no_alert_for_skipped_runs = False
+    ,no_alert_for_canceled_runs = False
+    ,alert_on_last_attempt = False
+  )
+  ,webhook_notifications = WebhookNotifications()
+)
+
+# COMMAND ----------
+
+from databricks.sdk.service.jobs import TaskDependency, ConditionTask, ConditionTaskOp
+
+# COMMAND ----------
+
+# task 1:  result_conditional
+result_conditional = Task(
+  task_key = "result_conditional"
+  ,description = "Check the result of the synthea_set_up_check task. If 'true' then proceed with data generation, otherwise prepare the catalog, schema, volume, synthea jar file and configuration files."
+  ,depends_on = [TaskDependency(
+    task_key = "synthea_set_up_check"
+  )]
+  ,run_if = RunIf("ALL_SUCCESS")
+  ,condition_task = ConditionTask(
+    op = ConditionTaskOp("EQUAL_TO")
+    ,left = "{{tasks.[synthea_set_up_check].values.[result]}}"
+    ,right = "True"
+  )
+  ,timeout_seconds = 0
+  ,email_notifications = TaskEmailNotifications()
+  ,notification_settings = TaskNotificationSettings(
+    no_alert_for_skipped_runs = False
+    ,no_alert_for_canceled_runs = False
+    ,alert_on_last_attempt = False
+  )
+  ,webhook_notifications = WebhookNotifications()
+)
+
+# COMMAND ----------
+
+# task 2: uc_setup
+uc_setup = Task(
+  task_key = "uc_setup"
+  ,description = "Create the catalog, schema, and volume for the data to be saved in if it does not exist."
+  ,depends_on = [TaskDependency(
+    task_key = "result_conditional"
+    ,outcome = "false"
+  )]
+  ,run_if = RunIf("ALL_SUCCESS")
+  ,job_cluster_key = job_cluster_key
+  ,notebook_task = NotebookTask(
+    notebook_path = f"/Workspace/Users/{current_user.user_name}/synthea-on-dbx/notebooks/00-setup-notebooks/0.1-uc-setup"
+    ,source = Source("WORKSPACE")
+    ,base_parameters = dict("")
+  )
+  ,timeout_seconds = 0
+  ,email_notifications = TaskEmailNotifications()
+  ,notification_settings = TaskNotificationSettings(
+    no_alert_for_skipped_runs = False
+    ,no_alert_for_canceled_runs = False
+    ,alert_on_last_attempt = False
+  )
+  ,webhook_notifications = WebhookNotifications()
+)
+
+# COMMAND ----------
+
+# task 3: install_synthea
+install_synthea = Task(
+  task_key = "install_synthea"
+  ,description = "Download the synthea jar file and save to the specified volume."
+  ,depends_on = [TaskDependency(
+    task_key = "uc_setup"
+  )]
+  ,run_if = RunIf("ALL_SUCCESS")
+  ,job_cluster_key = job_cluster_key
+  ,notebook_task = NotebookTask(
+    notebook_path = f"/Workspace/Users/{current_user.user_name}/synthea-on-dbx/notebooks/00-setup-notebooks/0.2-install-synthea"
+    ,source = Source("WORKSPACE")
+    ,base_parameters = dict("")
+  )
+  ,timeout_seconds = 0
+  ,email_notifications = TaskEmailNotifications()
+  ,notification_settings = TaskNotificationSettings(
+    no_alert_for_skipped_runs = False
+    ,no_alert_for_canceled_runs = False
+    ,alert_on_last_attempt = False
+  )
+  ,webhook_notifications = WebhookNotifications()
+)
+
+# COMMAND ----------
+
+{
+  "task_key": "install_synthea",
+  "depends_on": [
+    {
+      "task_key": "uc_setup"
+    }
+  ],
+  "run_if": "ALL_SUCCESS",
+  "notebook_task": {
+    "notebook_path": "/Workspace/Users/matthew.giglia@databricks.com/db-nosql/00-setup-notebooks/0.1-install-synthea",
+    "source": "WORKSPACE"
+  },
+  "job_cluster_key": "mg-synthea-data-gen",
+  "timeout_seconds": 0,
+  "email_notifications": {},
+  "notification_settings": {
+    "no_alert_for_skipped_runs": false,
+    "no_alert_for_canceled_runs": false,
+    "alert_on_last_attempt": false
+  },
+  "webhook_notifications": {}
+}
+
+# COMMAND ----------
+
 # DBTITLE 1,Create Synthea Data Generation Workflow
 print("Attempting to create the job. Please wait...\n")
 
@@ -160,25 +290,9 @@ j = w.jobs.create(
   name = job_name
   ,description = job_description
   ,tasks = [
-    Task(
-      task_key = "synthea_set_up_check"
-      ,description = "Check to see if the synthea jar and configuration files have been set up"
-      ,run_if = RunIf("ALL_SUCCESS")
-      ,job_cluster_key = job_cluster_key
-      ,notebook_task = NotebookTask(
-        notebook_path = f"/Workspace/Users/{current_user.user_name}/synthea-on-dbx/notebooks/00-setup-notebooks/0.0-set-up-check"
-        ,source = Source("WORKSPACE")
-        ,base_parameters = dict("")
-      )
-      ,timeout_seconds = 0
-      ,email_notifications = TaskEmailNotifications()
-      ,notification_settings = TaskNotificationSettings(
-        no_alert_for_skipped_runs = False
-        ,no_alert_for_canceled_runs = False
-        ,alert_on_last_attempt = False
-      )
-      ,webhook_notifications = WebhookNotifications()
-    )
+    synthea_set_up_check
+    ,result_conditional
+    ,uc_setup
   ]
   ,job_clusters = [cluster_spec]
   ,queue = QueueSettings(enabled = True)
@@ -200,3 +314,78 @@ j = w.jobs.create(
 )
 
 print(f"Job created successfully. Job ID: {j.job_id}")
+
+# COMMAND ----------
+
+,
+,
+{
+  "task_key": "install_synthea",
+  "depends_on": [
+    {
+      "task_key": "uc_setup"
+    }
+  ],
+  "run_if": "ALL_SUCCESS",
+  "notebook_task": {
+    "notebook_path": "/Workspace/Users/matthew.giglia@databricks.com/db-nosql/00-setup-notebooks/0.1-install-synthea",
+    "source": "WORKSPACE"
+  },
+  "job_cluster_key": "mg-synthea-data-gen",
+  "timeout_seconds": 0,
+  "email_notifications": {},
+  "notification_settings": {
+    "no_alert_for_skipped_runs": false,
+    "no_alert_for_canceled_runs": false,
+    "alert_on_last_attempt": false
+  },
+  "webhook_notifications": {}
+},
+{
+  "task_key": "configure_synthea",
+  "depends_on": [
+    {
+      "task_key": "install_synthea"
+    }
+  ],
+  "run_if": "ALL_SUCCESS",
+  "notebook_task": {
+    "notebook_path": "/Workspace/Users/matthew.giglia@databricks.com/db-nosql/00-setup-notebooks/0.2-synthea-configuration",
+    "source": "WORKSPACE"
+  },
+  "job_cluster_key": "mg-synthea-data-gen",
+  "timeout_seconds": 0,
+  "email_notifications": {},
+  "notification_settings": {
+    "no_alert_for_skipped_runs": false,
+    "no_alert_for_canceled_runs": false,
+    "alert_on_last_attempt": false
+  },
+  "webhook_notifications": {}
+},
+{
+  "task_key": "generate_synthetic_data",
+  "depends_on": [
+    {
+      "task_key": "result_conditional",
+      "outcome": "true"
+    },
+    {
+      "task_key": "configure_synthea"
+    }
+  ],
+  "run_if": "AT_LEAST_ONE_SUCCESS",
+  "notebook_task": {
+    "notebook_path": "/Workspace/Users/matthew.giglia@databricks.com/db-nosql/01-data-generation/1.0-synthea-data-generator",
+    "source": "WORKSPACE"
+  },
+  "job_cluster_key": "mg-synthea-data-gen",
+  "timeout_seconds": 0,
+  "email_notifications": {},
+  "notification_settings": {
+    "no_alert_for_skipped_runs": false,
+    "no_alert_for_canceled_runs": false,
+    "alert_on_last_attempt": false
+  },
+  "webhook_notifications": {}
+}
