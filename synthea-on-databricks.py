@@ -18,6 +18,13 @@ dbutils.widgets.text("node_type_id", "i3.xlarge", "Node Type Id, Required if Ins
 
 # COMMAND ----------
 
+catalog_name = dbutils.widgets.get("catalog_name")
+schema_name = dbutils.widgets.get("schema_name")
+instance_pool_id = dbutils.widgets.get("instance_pool_id")
+node_type_id = dbutils.widgets.get("node_type_id")
+
+# COMMAND ----------
+
 print(
 f"""
 Based on user input's the job will write files into this catalog.schema's Volume:
@@ -33,10 +40,29 @@ Please note that is the catalog, schema, or Volume do not exist, the workflow no
 
 # COMMAND ----------
 
-
-
-# COMMAND ----------
-
 from databricks.sdk import WorkspaceClient
 
 w = WorkspaceClient()
+
+# COMMAND ----------
+
+post_job_result = dbutils.notebook.run(
+  path = "workflows/synthea-on-dbx-create-workflow"
+  ,timeout_seconds = 150
+  ,arguments = {
+    "catalog_name": catalog_name
+    ,"schema_name": schema_name
+    ,"instance_pool_id": instance_pool_id
+    ,"node_type_id": node_type_id
+  }
+)
+
+# COMMAND ----------
+
+import json
+
+print(json.loads(post_job_result))
+
+# COMMAND ----------
+
+
