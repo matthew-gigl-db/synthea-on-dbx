@@ -1,5 +1,4 @@
 # synthea-on-dbx
-***
 ### Generate Synthetic Health Care Records using Synthea Directly On Databricks
 
 Synthetic Health's [Synthea Patient Generator](https://github.com/synthetichealth/synthea) is a great resource for generating realistic looking synthetic health care data in a variety of formats including FHIR, C-CDA, CPCDS and a light weight, easy to use CSV format.  
