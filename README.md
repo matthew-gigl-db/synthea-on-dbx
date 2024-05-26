@@ -1,4 +1,5 @@
 # synthea-on-dbx
+***
 ### Generate Synthetic Health Care Records using Synthea Directly On Databricks
 
 Synthetic Health's [Synthea Patient Generator](https://github.com/synthetichealth/synthea) is a great resource for generating realistic looking synthetic health care data in a variety of formats including FHIR, C-CDA, CPCDS and a light weight, easy to use CSV format.  
@@ -8,6 +9,8 @@ The data includes encounters, conditions, allergies, care plans and more!
 Synthea can be executed by issueing commands to a downloadable JAR file that requires the Java JDK version 11 or higher.  Historically Databricks users would execute Synthea on a local machine to generate some files and then upload them to cloud storage for use.  
 
 The purpose of this repository is to allow a Databricks user to generate synthetic patient records using Synthea directly using a Databricks Workflow.  The workflow can be executed indepently once its created, or it can be looped with a random wait time to help simulate the variablity in patient records flowing into a health system.  This is particularly useful for demostrating streaming ETL methods such as for Spark Structured Streaming or Delta Live Tables.  
+
+***
 
 #### Usage:  
 
@@ -24,6 +27,7 @@ The purpose of this repository is to allow a Databricks user to generate synthet
   a. Post a conditional Databricks Workflow to the Workspace.  The workflow will check to see if Synthea's JAR and configuration file is available in the desired **volume** in Unity Catalog.  If its there, the workflow will immediately begin running the data generator which will generate a random number patient records between 1 and 1000 records.  If the JAR and configuration file are not available, the workflow will create or replace the catalog, schema, and volume required, download the latest JAR from the Synthea github page, and write the configuration file that will be used for its execution.  
   b. Excute the workflow from the notebook a given number of times as set above.   
 
+***
 
 #### Limitations: 
 
