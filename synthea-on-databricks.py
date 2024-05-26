@@ -126,10 +126,6 @@ runs = [run.as_dict() for run in runs]
 
 # COMMAND ----------
 
-runs
-
-# COMMAND ----------
-
 import pandas as pd
 
 # COMMAND ----------
