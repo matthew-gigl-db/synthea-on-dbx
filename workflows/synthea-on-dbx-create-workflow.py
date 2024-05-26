@@ -49,7 +49,12 @@ latest_lts_version = w.clusters.select_spark_version(latest=True, long_term_supp
 
 # COMMAND ----------
 
+current_user.as_dict()
 
+# COMMAND ----------
+
+job_name = current_user.name.family_name + "-" + current_user.id + "-synthea-data-generation"
+job_cluster_key = current_user.name.family_name + "-" + current_user.id + "-synthea-data-gen"
 
 # COMMAND ----------
 
@@ -57,6 +62,9 @@ print(
 f"""
 Current user: {current_user.user_name}
 Latest LTS version: {latest_lts_version}
+
+Databricks Workflow Name: {job_name}
+Job cluster key: {job_cluster_key}
 """
 )
 
