@@ -48,8 +48,6 @@ Please note that is the catalog, schema, or Volume do not exist, the workflow no
 
 # DBTITLE 1,Databricks SDK workspace initialization
 from databricks.sdk import WorkspaceClient
-from databricks.sdk.service.jobs import Source, Task, NotebookTask, TaskEmailNotifications, TaskNotificationSettings, WebhookNotifications, RunIf, QueueSettings, JobParameter, JobRunAs, JobCluster
-from databricks.sdk.service.compute import ClusterSpec, DataSecurityMode, RuntimeEngine
 
 w = WorkspaceClient()
 
@@ -85,6 +83,12 @@ node_type_id = {node_type_id}
 Note that node_type_id will only be used if an instance_pool_id is not set.
 """
 )
+
+# COMMAND ----------
+
+# DBTITLE 1,Import Databricks Cluster Configuration Modules
+from databricks.sdk.service.jobs import JobCluster
+from databricks.sdk.service.compute import ClusterSpec, DataSecurityMode, RuntimeEngine
 
 # COMMAND ----------
 
@@ -135,24 +139,12 @@ else:
 
 # COMMAND ----------
 
-# DBTITLE 1,Existing Jobs List and Deletion
-jobs_list = w.jobs.list(
-  expand_tasks = False
-  ,name = job_name
-)
-jobs_list = [job.as_dict() for job in jobs_list]
-print(jobs_list, "\n")
-if len(jobs_list) == 0: 
-  print("No jobs found. Proceed with creating a new job...")
-else:
-  print("One or more jobs with the same name already exists. Deleting the jobs...\n\n")
-  for i in range(0,len(jobs_list)):
-    print(f"Deleting job {jobs_list[i].get('job_id')}\n")
-    w.jobs.delete(jobs_list[i].get("job_id"))
-  print("All jobs with the same name have been deleted. Proceed with creating a new job...")
+# DBTITLE 1,Import Databricks SDK Job and Task Configuration Modules
+from databricks.sdk.service.jobs import Source, Task, NotebookTask, TaskEmailNotifications, TaskNotificationSettings, WebhookNotifications, RunIf, QueueSettings, JobParameter, JobRunAs
 
 # COMMAND ----------
 
+# DBTITLE 1,Syntha Set-up Check Task
 # task 0: syntha_set_up_check
 synthea_set_up_check = Task(
   task_key = "synthea_set_up_check"
@@ -176,10 +168,12 @@ synthea_set_up_check = Task(
 
 # COMMAND ----------
 
+# DBTITLE 1,Import Databricks Task Dependency Modules
 from databricks.sdk.service.jobs import TaskDependency, ConditionTask, ConditionTaskOp
 
 # COMMAND ----------
 
+# DBTITLE 1,Result Conditional Task
 # task 1:  result_conditional
 result_conditional = Task(
   task_key = "result_conditional"
@@ -205,6 +199,7 @@ result_conditional = Task(
 
 # COMMAND ----------
 
+# DBTITLE 1,Unity Catalog Setup Task
 # task 2: uc_setup
 uc_setup = Task(
   task_key = "uc_setup"
@@ -232,6 +227,7 @@ uc_setup = Task(
 
 # COMMAND ----------
 
+# DBTITLE 1,Install Synthea Task
 # task 3: install_synthea
 install_synthea = Task(
   task_key = "install_synthea"
@@ -258,28 +254,80 @@ install_synthea = Task(
 
 # COMMAND ----------
 
-{
-  "task_key": "install_synthea",
-  "depends_on": [
-    {
-      "task_key": "uc_setup"
-    }
-  ],
-  "run_if": "ALL_SUCCESS",
-  "notebook_task": {
-    "notebook_path": "/Workspace/Users/matthew.giglia@databricks.com/db-nosql/00-setup-notebooks/0.1-install-synthea",
-    "source": "WORKSPACE"
-  },
-  "job_cluster_key": "mg-synthea-data-gen",
-  "timeout_seconds": 0,
-  "email_notifications": {},
-  "notification_settings": {
-    "no_alert_for_skipped_runs": false,
-    "no_alert_for_canceled_runs": false,
-    "alert_on_last_attempt": false
-  },
-  "webhook_notifications": {}
-}
+# task 4: configure_synthea
+configure_synthea = Task(
+  task_key = "configure_synthea"
+  ,description = "Write synthea configuration file to the volume to control data output."
+  ,depends_on = [TaskDependency(
+    task_key = "install_synthea"
+  )]
+  ,run_if = RunIf("ALL_SUCCESS")
+  ,job_cluster_key = job_cluster_key
+  ,notebook_task = NotebookTask(
+    notebook_path = f"/Workspace/Users/{current_user.user_name}/synthea-on-dbx/notebooks/00-setup-notebooks/0.3-synthea-configuration"
+    ,source = Source("WORKSPACE")
+    ,base_parameters = dict("")
+  )
+  ,timeout_seconds = 0
+  ,email_notifications = TaskEmailNotifications()
+  ,notification_settings = TaskNotificationSettings(
+    no_alert_for_skipped_runs = False
+    ,no_alert_for_canceled_runs = False
+    ,alert_on_last_attempt = False
+  )
+  ,webhook_notifications = WebhookNotifications()
+)
+
+# COMMAND ----------
+
+# DBTITLE 1,Generate Synthetic Data Task
+# task 5: generate_synthetic_data
+generate_synthetic_data = Task(
+  task_key = "generate_synthetic_data"
+  ,description = "Run synthea to generate synthetic healthcare data."
+  ,depends_on = [
+    TaskDependency(
+      task_key = "result_conditional"
+      ,outcome = "true"
+    )
+    ,TaskDependency(
+      task_key = "configure_synthea"
+    )
+  ]
+  ,run_if = RunIf("AT_LEAST_ONE_SUCCESS")
+  ,job_cluster_key = job_cluster_key
+  ,notebook_task = NotebookTask(
+    notebook_path = f"/Workspace/Users/{current_user.user_name}/synthea-on-dbx/notebooks/01-data-generation/1.0-synthea-data-generator"
+    ,source = Source("WORKSPACE")
+    ,base_parameters = dict("")
+  )
+  ,timeout_seconds = 0
+  ,email_notifications = TaskEmailNotifications()
+  ,notification_settings = TaskNotificationSettings(
+    no_alert_for_skipped_runs = False
+    ,no_alert_for_canceled_runs = False
+    ,alert_on_last_attempt = False
+  )
+  ,webhook_notifications = WebhookNotifications()
+)
+
+# COMMAND ----------
+
+# DBTITLE 1,Existing Jobs List and Deletion
+jobs_list = w.jobs.list(
+  expand_tasks = False
+  ,name = job_name
+)
+jobs_list = [job.as_dict() for job in jobs_list]
+print(jobs_list, "\n")
+if len(jobs_list) == 0: 
+  print("No jobs found. Proceed with creating a new job...")
+else:
+  print("One or more jobs with the same name already exists. Deleting the jobs...\n\n")
+  for i in range(0,len(jobs_list)):
+    print(f"Deleting job {jobs_list[i].get('job_id')}\n")
+    w.jobs.delete(jobs_list[i].get("job_id"))
+  print("All jobs with the same name have been deleted. Proceed with creating a new job...")
 
 # COMMAND ----------
 
@@ -293,6 +341,9 @@ j = w.jobs.create(
     synthea_set_up_check
     ,result_conditional
     ,uc_setup
+    ,install_synthea
+    ,configure_synthea
+    ,generate_synthetic_data
   ]
   ,job_clusters = [cluster_spec]
   ,queue = QueueSettings(enabled = True)
@@ -317,75 +368,9 @@ print(f"Job created successfully. Job ID: {j.job_id}")
 
 # COMMAND ----------
 
-,
-,
-{
-  "task_key": "install_synthea",
-  "depends_on": [
-    {
-      "task_key": "uc_setup"
-    }
-  ],
-  "run_if": "ALL_SUCCESS",
-  "notebook_task": {
-    "notebook_path": "/Workspace/Users/matthew.giglia@databricks.com/db-nosql/00-setup-notebooks/0.1-install-synthea",
-    "source": "WORKSPACE"
-  },
-  "job_cluster_key": "mg-synthea-data-gen",
-  "timeout_seconds": 0,
-  "email_notifications": {},
-  "notification_settings": {
-    "no_alert_for_skipped_runs": false,
-    "no_alert_for_canceled_runs": false,
-    "alert_on_last_attempt": false
-  },
-  "webhook_notifications": {}
-},
-{
-  "task_key": "configure_synthea",
-  "depends_on": [
-    {
-      "task_key": "install_synthea"
-    }
-  ],
-  "run_if": "ALL_SUCCESS",
-  "notebook_task": {
-    "notebook_path": "/Workspace/Users/matthew.giglia@databricks.com/db-nosql/00-setup-notebooks/0.2-synthea-configuration",
-    "source": "WORKSPACE"
-  },
-  "job_cluster_key": "mg-synthea-data-gen",
-  "timeout_seconds": 0,
-  "email_notifications": {},
-  "notification_settings": {
-    "no_alert_for_skipped_runs": false,
-    "no_alert_for_canceled_runs": false,
-    "alert_on_last_attempt": false
-  },
-  "webhook_notifications": {}
-},
-{
-  "task_key": "generate_synthetic_data",
-  "depends_on": [
-    {
-      "task_key": "result_conditional",
-      "outcome": "true"
-    },
-    {
-      "task_key": "configure_synthea"
-    }
-  ],
-  "run_if": "AT_LEAST_ONE_SUCCESS",
-  "notebook_task": {
-    "notebook_path": "/Workspace/Users/matthew.giglia@databricks.com/db-nosql/01-data-generation/1.0-synthea-data-generator",
-    "source": "WORKSPACE"
-  },
-  "job_cluster_key": "mg-synthea-data-gen",
-  "timeout_seconds": 0,
-  "email_notifications": {},
-  "notification_settings": {
-    "no_alert_for_skipped_runs": false,
-    "no_alert_for_canceled_runs": false,
-    "alert_on_last_attempt": false
-  },
-  "webhook_notifications": {}
-}
+# DBTITLE 1,Notebook Exit with Job Status
+import json
+dbutils.notebook.exit(json.dumps({
+  "status": "OK",
+  "job": j.as_dict()
+}))
