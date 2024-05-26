@@ -41,13 +41,7 @@ schema_name = {schema_name}
 The Databricks workflow created by this notebook will write files into the following schema's Volume:
 /Volumes/{catalog_name}/{schema_name}/synthetic_files_raw/
 
-Please note that is the catalog, schema, or Volume do not exist, the workflow notebooks will attempt to create them.  If the user does not have the appropriate permissions to create or use the inputted catalog, or create or use the inputted schema, the workflow will fail during execution.  Please adjust the inputted values and re-run this notebook.
-
-Cluster Specification Details: 
-instance_pool_id = {instance_pool_id}
-node_type_id = {node_type_id}
-
-Note that node_type_id will only be used if an instance_pool_id is not set.  
+Please note that is the catalog, schema, or Volume do not exist, the workflow notebooks will attempt to create them.  If the user does not have the appropriate permissions to create or use the inputted catalog, or create or use the inputted schema, the workflow will fail during execution.  Please adjust the inputted values and re-run this notebook.  
 """
 )
 
@@ -85,43 +79,18 @@ Latest LTS version: {latest_lts_version}
 Databricks Workflow Name: {job_name}
 Job cluster key: {job_cluster_key}
 Job description: {job_description}
+
+Cluster Specification Details: 
+instance_pool_id = {instance_pool_id}
+node_type_id = {node_type_id}
+
+Note that node_type_id will only be used if an instance_pool_id is not set.
 """
 )
 
 # COMMAND ----------
 
-# DBTITLE 1,Check if a job with the same name exists
-jobs_list = w.jobs.list(
-  expand_tasks=False
-  ,name = job_name
-)
-jobs_list = [job.as_dict() for job in jobs_list]
-print(jobs_list)
-if len(jobs_listed) == 0: 
-  print("No jobs found. Creating a new job...")
-else:
-  print("Job already exists. Deleting the job...")
-  # w.jobs.delete(jobs_list[0]["job_id"])
-
-# COMMAND ----------
-
-help(w.jobs.list)
-
-# COMMAND ----------
-
-help(w.clusters.list_node_types)
-
-# COMMAND ----------
-
-node_types = w.clusters.list_node_types()
-
-# COMMAND ----------
-
-node_types.as_dict()
-
-# COMMAND ----------
-
-if instance_node_id == "": 
+if instance_pool_id == "": 
   cluster_spec = JobCluster(
     job_cluster_key = job_cluster_key
     ,new_cluster = ClusterSpec(
@@ -167,6 +136,24 @@ else:
 
 # COMMAND ----------
 
+# DBTITLE 1,Check if a job with the same name exists
+jobs_list = w.jobs.list(
+  expand_tasks=False
+  ,name = job_name
+)
+jobs_list = [job.as_dict() for job in jobs_list]
+print(jobs_list)
+if len(jobs_list) == 0: 
+  print("No jobs found. Creating a new job...")
+else:
+  print("One or more jobs with the same name already exists. Deleting the jobs...")
+  for i in range(0,len(jobs_list)):
+    print(f"Deleting job {jobs_list[i].get('job_id')}")
+    w.jobs.delete(jobs_list[i].get("job_id"))
+  print("All jobs with the same name have been deleted. Creating a new job...")
+
+# COMMAND ----------
+
 
 # job_name            = input("Some short name for the job (for example, my-job): ")
 # description         = input("Some short description for the job (for example, My job): ")
@@ -184,7 +171,6 @@ j = w.jobs.create(
       task_key = "synthea_set_up_check"
       ,description = "Check to see if the synthea jar and configuration files have been set up"
       ,run_if = RunIf("ALL_SUCCESS")
-      # ,existing_cluster_id = existing_cluster_id
       ,job_cluster_key = job_cluster_key
       ,notebook_task = NotebookTask(
         notebook_path = f"/Workspace/Users/{current_user.user_name}/synthea-on-dbx/notebooks/00-setup-notebooks/0.0-set-up-check"
@@ -201,30 +187,7 @@ j = w.jobs.create(
       ,webhook_notifications = WebhookNotifications()
     )
   ]
-  ,job_clusters = [
-    JobCluster(
-      job_cluster_key = job_cluster_key
-      ,new_cluster = ClusterSpec(
-        spark_version = latest_lts_version
-        ,spark_conf = {
-          "spark.master": "local[*, 4]",
-          "spark.databricks.cluster.profile": "singleNode"
-        }
-        ,custom_tags = {
-          "ResourceClass": "SingleNode"
-        }
-        ,spark_env_vars = {
-          "JNAME": "zulu17-ca-amd64"
-        }
-        # ,instance_pool_id = "0727-104344-hauls13-pool-uftxk0r6"
-        # ,driver_instance_pool_id = "0727-104344-hauls13-pool-uftxk0r6"
-        ,data_security_mode = DataSecurityMode("SINGLE_USER")
-        ,runtime_engine = RuntimeEngine("STANDARD")
-        ,num_workers = 0
-        ,node_type_id = "i3.xlarge"
-      )
-    )
-  ]
+  ,job_clusters = [cluster_spec]
 )
 
 print(f"View the job at {w.config.host}/#job/{j.job_id}\n")
