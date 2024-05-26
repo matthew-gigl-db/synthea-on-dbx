@@ -1,16 +1,20 @@
 # Databricks notebook source
+# DBTITLE 1,install databricks sdk upgrade
 # MAGIC %pip install databricks-sdk --upgrade
 
 # COMMAND ----------
 
+# DBTITLE 1,Python Library Restart
 dbutils.library.restartPython()
 
 # COMMAND ----------
 
+# DBTITLE 1,get databricks-sdk version
 # MAGIC %pip show databricks-sdk | grep -oP '(?<=Version: )\S+'
 
 # COMMAND ----------
 
+# DBTITLE 1,Dashboard Widget Configuration
 dbutils.widgets.text("catalog_name", "")
 dbutils.widgets.text("schema_name", "synthea")
 dbutils.widgets.text("instance_pool_id", "", "Optional Instance Pool ID for the Cluster Spec")
@@ -19,6 +23,7 @@ dbutils.widgets.text("number_of_job_runs", "1", "Number of times to run the job"
 
 # COMMAND ----------
 
+# DBTITLE 1,Retrieve Widget Inputs
 catalog_name = dbutils.widgets.get("catalog_name")
 schema_name = dbutils.widgets.get("schema_name")
 instance_pool_id = dbutils.widgets.get("instance_pool_id")
@@ -27,6 +32,7 @@ number_of_job_runs = int(dbutils.widgets.get("number_of_job_runs"))
 
 # COMMAND ----------
 
+# DBTITLE 1,File Writing Workflow Details
 print(
 f"""
 Based on user input's the job will write files into this catalog.schema's Volume:
@@ -50,12 +56,14 @@ Number of times the Databricks workflow will be executed to simulate variability
 
 # COMMAND ----------
 
+# DBTITLE 1,Databricks Workspace Client
 from databricks.sdk import WorkspaceClient
 
 w = WorkspaceClient()
 
 # COMMAND ----------
 
+# DBTITLE 1,Post Synthea Workflow to Databricks
 post_job_result = dbutils.notebook.run(
   path = "workflows/synthea-on-dbx-create-workflow"
   ,timeout_seconds = 150
@@ -69,10 +77,12 @@ post_job_result = dbutils.notebook.run(
 
 # COMMAND ----------
 
+# DBTITLE 1,Load JSON library
 import json
 
 # COMMAND ----------
 
+# DBTITLE 1,Return Status and Job Id of Synthea Workflow Creation
 if json.loads(post_job_result)["status"] == "OK":
   job_id = json.loads(post_job_result)["job"]["job_id"]
   print(f""" 
@@ -83,23 +93,23 @@ else:
 
 # COMMAND ----------
 
-help(w.jobs.run_now_and_wait)
-
-# COMMAND ----------
-
+# DBTITLE 1,Import Random Number Generator
 from random import randint
 
 # COMMAND ----------
 
+# DBTITLE 1,random wait time
 wait_time = randint(300, 600)
 wait_time
 
 # COMMAND ----------
 
+# DBTITLE 1,Import Sleep Method
 from time import sleep
 
 # COMMAND ----------
 
+# DBTITLE 1,Job Scheduler
 for i in range(0, number_of_job_runs):
   if i == 0:
     w.jobs.run_now_and_wait(
@@ -121,19 +131,23 @@ for i in range(0, number_of_job_runs):
 
 # COMMAND ----------
 
+# DBTITLE 1,List Job Runs
 runs = w.jobs.list_runs(job_id=job_id)
 runs = [run.as_dict() for run in runs]
 
 # COMMAND ----------
 
+# DBTITLE 1,Import Pandas
 import pandas as pd
 
 # COMMAND ----------
 
+# DBTITLE 1,List to Pandas to PySpark DataFrame Conversion
 #create a pandas dataframe and then convert it to a pySpark dataframe
 runs_pandas = pd.DataFrame(runs)
 runs_df = spark.createDataFrame(runs_pandas)
 
 # COMMAND ----------
 
+# DBTITLE 1,display runs dataframe
 display(runs_df)
