@@ -254,6 +254,7 @@ install_synthea = Task(
 
 # COMMAND ----------
 
+# DBTITLE 1,Configure Synthea Task
 # task 4: configure_synthea
 configure_synthea = Task(
   task_key = "configure_synthea"
