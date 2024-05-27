@@ -32,7 +32,7 @@ The purpose of this repository is to allow a Databricks user to generate synthet
 
 The first release of this workflow generates between 1 and 1000 patient records in a collection of 18 CSV files that are saved in the output/csv subfolder of the volume.  The patient records are all from the default geographic location: Boston, MA.  Synthea is capable of taking several options including different file output types such comprehensive HL7 FHIR.   Setting additional parameters will generate patients in different geographic locations.  
 
-The notebook `notebooks/00-setup-notebooks/0.3-synthea-configuration` is capable of taking several Databricks Widget inputs to control the execution of the Synthea JAR but the workflow has not been set up yet to accpet this additional values.  Adjusting the defaults used in the notebook manually in your cloned copy of this repo will allow for setting other runtime settings.  Future releases of this repo will continue the additional options required in the **synthea-on-databricks** notebook.  
+The notebook `notebooks/00-setup-notebooks/0.3-synthea-configuration` is capable of taking several Databricks Widget inputs and is responsible for writing the configuration file based on those inputs. Despite having those options the workflow has not been set up to accpet these additional values yet.  Future releases of this repo will add the additional options required in the **synthea-on-databricks** notebook to execute the workflow and provide more control over the configuration file creation.   
 
 
 
