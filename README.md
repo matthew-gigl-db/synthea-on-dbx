@@ -5,9 +5,9 @@ Synthetic Health's [Synthea Patient Generator](https://github.com/synthetichealt
 
 The data includes encounters, conditions, allergies, care plans and more!  
 
-Synthea can be executed by issueing commands to a downloadable JAR file that requires the Java JDK version 11 or higher.  Historically Databricks users would execute Synthea on a local machine to generate some files and then upload them to cloud storage for use.  
+Synthea's patient record generation may be executed by issueing shell commands with a downloadable JAR file.  The only requirements are Java's JDK version 11 or higher.  Historically Databricks users would execute Synthea on a local machine to generate some files and then upload them to cloud storage for use.  
 
-The purpose of this repository is to allow a Databricks user to generate synthetic patient records using Synthea directly using a Databricks Workflow.  The workflow can be executed indepently once its created, or it can be looped with a random wait time to help simulate the variablity in patient records flowing into a health system.  This is particularly useful for demostrating streaming ETL methods such as for Spark Structured Streaming or Delta Live Tables.  
+The purpose of this repository is to allow a Databricks user to generate synthetic patient records with Synthea directly using a Databricks Workflow.  The workflow may be executed indepently once its created, or it may be looped with a random wait time to help simulate the variablity in patient records flowing into a health system.  This is particularly useful for devloping and testing streaming ETL methods such as for Spark Structured Streaming or Delta Live Tables.  
 
 ***
 
