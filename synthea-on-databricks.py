@@ -145,12 +145,7 @@ import pandas as pd
 # DBTITLE 1,List to Pandas to PySpark DataFrame Conversion
 #create a pandas dataframe and then convert it to a pySpark dataframe
 runs_pandas = pd.DataFrame(runs)
-runs_df = spark.createDataFrame(runs_pandas)
-
-# COMMAND ----------
-
-# DBTITLE 1,display runs dataframe
-display(runs_df)
+runs_pandas
 
 # COMMAND ----------
 
