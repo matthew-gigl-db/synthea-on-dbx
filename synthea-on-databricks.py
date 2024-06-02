@@ -162,3 +162,4 @@ display(runs_df)
 #     ,"schema_name": schema_name
 #   }
 # )
+# cleanup_result
