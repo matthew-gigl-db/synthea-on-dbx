@@ -99,7 +99,7 @@ from random import randint
 # COMMAND ----------
 
 # DBTITLE 1,random wait time
-wait_time = randint(300, 600)
+wait_time = randint(60, 240)
 wait_time
 
 # COMMAND ----------
@@ -151,3 +151,14 @@ runs_df = spark.createDataFrame(runs_pandas)
 
 # DBTITLE 1,display runs dataframe
 display(runs_df)
+
+# COMMAND ----------
+
+# cleanup_result = dbutils.notebook.run(
+#   path = "notebooks/02-clean-up"
+#   ,timeout_seconds = 150
+#   ,arguments = {
+#     "catalog_name": catalog_name
+#     ,"schema_name": schema_name
+#   }
+# )

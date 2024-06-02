@@ -29,3 +29,11 @@ result = subprocess.run(cmd, shell=True, check=True, capture_output=True)
 # COMMAND ----------
 
 result
+
+# COMMAND ----------
+
+import json
+dbutils.notebook.exit(json.dumps({
+  "status": "OK",
+  "volume_contents": dbutils.fs.ls(volume_path)
+}))
