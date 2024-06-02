@@ -48,7 +48,7 @@ Cluster Specification Details:
 instance_pool_id = {instance_pool_id}
 node_type_id = {node_type_id}
 
-Note that node_type_id will only be used if an instance_pool_id is not set.
+Note that node_type_id will only be used if an instance_pool_id is not set.  Bricksters on e2-demo-field-eng may use instance_pool_id = 0727-104344-hauls13-pool-uftxk0r6.  
 
 Number of times the Databricks workflow will be executed to simulate variability in patient record creation: number_of_job_runs = {number_of_job_runs}
 """
