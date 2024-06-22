@@ -20,6 +20,7 @@ dbutils.widgets.text("schema_name", "synthea")
 dbutils.widgets.text("instance_pool_id", "", "Optional Instance Pool ID for the Cluster Spec")
 dbutils.widgets.text("node_type_id", "i3.xlarge", "Node Type Id, Required if Instance Pool Id is not specified")
 dbutils.widgets.text("number_of_job_runs", "1", "Number of times to run the job")
+dbutils.widgets.dropdown("create_landing_zone", "false", ["true", "false"], "Optional Create a landing zone")
 
 # COMMAND ----------
 
@@ -29,6 +30,7 @@ schema_name = dbutils.widgets.get("schema_name")
 instance_pool_id = dbutils.widgets.get("instance_pool_id")
 node_type_id = dbutils.widgets.get("node_type_id")
 number_of_job_runs = int(dbutils.widgets.get("number_of_job_runs"))
+create_landing_zone = dbutils.widgets.get("Create Landing Zone").lower()
 
 # COMMAND ----------
 
@@ -41,6 +43,10 @@ schema_name = {schema_name}
 
 The Databricks workflow created by this notebook will write files into the following schema's Volume:
 /Volumes/{catalog_name}/{schema_name}/synthetic_files_raw/
+
+The Databricks workflow created by this notebook will create a "landing" zone: {create_landing_zone}
+If create_landing_zone == True, the Databricks workflow created by this notebook will write files into the following schema's volume:
+/Volumes/{catalog_name}/{schema_name}/landing/
 
 Please note that is the catalog, schema, or Volume do not exist, the workflow notebooks will attempt to create them.  If the user does not have the appropriate permissions to create or use the inputted catalog, or create or use the inputted schema, the workflow will fail during execution.  Please adjust the inputted values and re-run this notebook. 
 
@@ -70,6 +76,7 @@ post_job_result = dbutils.notebook.run(
   ,arguments = {
     "catalog_name": catalog_name
     ,"schema_name": schema_name
+    ,"create_landing_zone": create_landing_zone
     ,"instance_pool_id": instance_pool_id
     ,"node_type_id": node_type_id
   }
@@ -117,6 +124,7 @@ for i in range(0, number_of_job_runs):
       ,job_parameters = {
         "catalog_name": catalog_name
         ,"schema_name": schema_name
+        ,"create_landing_zone": create_landing_zone
       } 
     )
   else:
@@ -126,6 +134,7 @@ for i in range(0, number_of_job_runs):
       ,job_parameters = {
         "catalog_name": catalog_name
         ,"schema_name": schema_name
+        ,"create_landing_zone": create_landing_zone
       } 
     )
 
