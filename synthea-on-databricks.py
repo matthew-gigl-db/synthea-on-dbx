@@ -30,7 +30,7 @@ schema_name = dbutils.widgets.get("schema_name")
 instance_pool_id = dbutils.widgets.get("instance_pool_id")
 node_type_id = dbutils.widgets.get("node_type_id")
 number_of_job_runs = int(dbutils.widgets.get("number_of_job_runs"))
-create_landing_zone = dbutils.widgets.get("Create Landing Zone").lower()
+create_landing_zone = dbutils.widgets.get("create_landing_zone").lower()
 
 # COMMAND ----------
 

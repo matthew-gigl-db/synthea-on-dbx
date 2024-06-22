@@ -22,20 +22,20 @@ The purpose of this repository is to allow a Databricks user to generate synthet
 
     b. **schema_name**: the schema that will be created and/or used for the volume that will be created.  The default for the schema name is "synthea".  Note that if more than one user wishes to run this notebook that either **catalog_name** or **schema_name** must be unique for a unique volume to be created.  It's OK for both users to write to the same volume as long as they both have permissions to use it.  
 
-    b. **create_landing_zone**: optional configuration setting that indicates if an additional volume called landing will also be created. Default value is false, the landing volume will not be created. The intention of the landing zone is to copy files that are generated at the default **synthetic_raw_files** volume to the **landing** volume. 
-    <br><br>Files in the _landing volume_ are organized into directories that contain files for a given table.<br>
-       **Example:**
+    c. **create_landing_zone**: optional configuration setting that indicates if an additional volume called landing will also be created. Default value is False (ie. the landing volume will not be created). If _create_landing_zone == True_, the landing volume will be created alongside the default volume, _synthetic_raw_files_, and the process will check if the files in _synthetic_raw_files_ exist in the _landing_ volume and only copy new files over.
+    <br><br>The intent of the landing zone is to copy files that are generated at the default **synthetic_raw_files** volume to the **landing** volume using a different hierarchical structure. This hierarchical structure is used to support other common ingestion use-case patterns compared to the hierarchical file structure of the _synthetic_raw_files_ volume. 
+    <br><br>Files in the _landing volume_ are organized into directories that contain files for a given object.<br>
+       **The landing volume file hierarchy will look like the following:**
             <br> <img src="https://i.postimg.cc/Y2mNVQYR/landing.png" alt="drawing" width="400"/>
-    <br><br>Files in the default _synthea_raw_files volume_ are organized into directories by timestamp, where each timestamp directory contains all of the files, or tables, for that given timestamp.<br>
-        <br>**Example:**
-            <br> <img src="https://i.postimg.cc/vZyv5D1z/synthea-raw-files.png" alt="drawing" width="400"/>
-    <br>The landing zone volume is intended to simulate how files are landed and organized by ingestion process' in other scenarios compared to synthetic_raw_files. When create_landing_zone == True, the landing volume will be created alongside the default volume, synthea_raw_files.
+    <br><br>Files in the default _synthetic_raw_files_ volume are organized into directories by timestamp, where each timestamp directory contains all of the files, or objects, for that given timestamp.<br>
+        <br>**The synthetic_raw_files volume file hierarchy looks like the following:**
+            <br> <img src="https://i.postimg.cc/vZyv5D1z/synthea-raw-files.png" alt="drawing" width="400"/><br><br>
 
-    c. **node_type_id**: If an **instance_pool_id** is not set, the **node_type_id** specifies which type of compute resouce will be used to create the assigned single node job cluster used to create and execute the workflow.  This defaults to *i3.xlarge*, which is an AWS **node_type_id**.  The Databricks Python SDK Workspace Client may be used to list the available node types in your workspace with `nodes = w.clusters.list_node_types()`.  Please review the Databricks Python SDK [documentation](https://docs.databricks.com/en/dev-tools/sdk-python.html) for more information. 
+    d. **node_type_id**: If an **instance_pool_id** is not set, the **node_type_id** specifies which type of compute resouce will be used to create the assigned single node job cluster used to create and execute the workflow.  This defaults to *i3.xlarge*, which is an AWS **node_type_id**.  The Databricks Python SDK Workspace Client may be used to list the available node types in your workspace with `nodes = w.clusters.list_node_types()`.  Please review the Databricks Python SDK [documentation](https://docs.databricks.com/en/dev-tools/sdk-python.html) for more information. 
 
-    d. **instance_pool_id**: If your workspace has a pool of clusters available to be used for job compute, you may optionally specify the **instance_pool_id**.  These ids are specific to a Databricks workspace and can be found using the Databricks Python SDK Workspace Client with `pools = w.instance_pools.list()`.
+    e. **instance_pool_id**: If your workspace has a pool of clusters available to be used for job compute, you may optionally specify the **instance_pool_id**.  These ids are specific to a Databricks workspace and can be found using the Databricks Python SDK Workspace Client with `pools = w.instance_pools.list()`.
 
-    e. **number_of_job_runs**:  Once the Databricks Workflow has been posted to the Workspace, you can optionally loop its execution a number of times using this input variable.  The default is one time.  Interactively executing the final commands in the notebook will also execute the Workflow with `w.jobs.run_now_and_wait(...)`.  This variable is used for convenience when demonstrating later streaming workflows that will utilize the synthetic data generated. 
+    f. **number_of_job_runs**:  Once the Databricks Workflow has been posted to the Workspace, you can optionally loop its execution a number of times using this input variable.  The default is one time.  Interactively executing the final commands in the notebook will also execute the Workflow with `w.jobs.run_now_and_wait(...)`.  This variable is used for convenience when demonstrating later streaming workflows that will utilize the synthetic data generated. 
      
 1. Run the rest of the ***synthea-on-databricks*** notebook to peform the following actions:    
   

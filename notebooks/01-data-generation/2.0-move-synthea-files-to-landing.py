@@ -1,6 +1,14 @@
 # Databricks notebook source
 # MAGIC %md
 # MAGIC ### Copy files from **_synthetic_files_raw_** to **_landing_**
+# MAGIC
+# MAGIC This notebook will create a new volume called _landing_ in the defined catalog and schema. This notebook and landing volume expects to be in the same catalog and schema as the _synthetic_raw_files_ volume. This will copy all files from _synthetic_raw_files_ and create directories for each of the objects (e.g. patients, claims, allergies, etc.) and their associated files by timestamp (e.g. 2024_06_24T12_33_21Z_patients.csv) in the newly created landing volume.
+# MAGIC <br>**The resulting file hierarchy will look like the following:** 
+# MAGIC             <br> <img src="https://i.postimg.cc/Y2mNVQYR/landing.png" alt="drawing" width="400"/>
+# MAGIC
+# MAGIC   <br>The intent of the landing volume is to simulate a hierarchical structure often used by ingestion process' in other scenarios compared to the hierarchical file structure of _synthetic_raw_files_ volume.
+# MAGIC   
+# MAGIC   <br>This notebook will check if the files in _synthetic_raw_files_ exist in the _landing_ volume and only copy new files over.
 
 # COMMAND ----------
 
@@ -60,7 +68,3 @@ for directory in directories.collect():
       print(f'Copying file: {file_name}.csv to target: {target_volume_path}')
       dbutils.fs.cp(f"{file_path}", dst)
   print(f'Successfully copied files to target \n target: {target_volume_path}')
-
-# COMMAND ----------
-
-print(dst)
