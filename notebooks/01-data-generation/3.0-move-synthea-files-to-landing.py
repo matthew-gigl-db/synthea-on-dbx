@@ -49,6 +49,8 @@ for directory in directories.collect():
   file_path = directory[0]
   directory = directory[1].split('/')[0]
   files = spark.sql(f"LIST '{file_path}' ")
+  # define file/directory to ignore
+  file_exception = 'data_quality_output_data_quality_output/'  
   print(f"Copying files from directory: {directory} \n source:{file_path}  \n target:{target_volume_path}")
 
   # get files in given directory

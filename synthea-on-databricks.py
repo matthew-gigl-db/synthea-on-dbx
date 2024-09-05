@@ -20,7 +20,8 @@ dbutils.widgets.text("schema_name", "synthea")
 dbutils.widgets.text("instance_pool_id", "", "Optional Instance Pool ID for the Cluster Spec")
 dbutils.widgets.text("node_type_id", "i3.xlarge", "Node Type Id, Required if Instance Pool Id is not specified")
 dbutils.widgets.text("number_of_job_runs", "1", "Number of times to run the job")
-dbutils.widgets.dropdown("create_landing_zone", "false", ["true", "false"], "Optional Create a landing zone")
+dbutils.widgets.dropdown("create_landing_zone", "true", ["true", "false"], "Optional Create a landing zone")
+dbutils.widgets.dropdown("inject_bad_data", "true", ["true", "false"], "Optional injection of bad data to select files")
 
 # COMMAND ----------
 
@@ -31,6 +32,7 @@ instance_pool_id = dbutils.widgets.get("instance_pool_id")
 node_type_id = dbutils.widgets.get("node_type_id")
 number_of_job_runs = int(dbutils.widgets.get("number_of_job_runs"))
 create_landing_zone = dbutils.widgets.get("create_landing_zone").lower()
+inject_bad_data = dbutils.widgets.get("inject_bad_data").lower()
 
 # COMMAND ----------
 
@@ -79,6 +81,7 @@ post_job_result = dbutils.notebook.run(
     ,"create_landing_zone": create_landing_zone
     ,"instance_pool_id": instance_pool_id
     ,"node_type_id": node_type_id
+    ,"inject_bad_data": inject_bad_data  
   }
 )
 
@@ -125,6 +128,7 @@ for i in range(0, number_of_job_runs):
         "catalog_name": catalog_name
         ,"schema_name": schema_name
         ,"create_landing_zone": create_landing_zone
+        ,"inject_bad_data": inject_bad_data
       } 
     )
   else:
@@ -135,6 +139,7 @@ for i in range(0, number_of_job_runs):
         "catalog_name": catalog_name
         ,"schema_name": schema_name
         ,"create_landing_zone": create_landing_zone
+        ,"inject_bad_data": inject_bad_data        
       } 
     )
 
