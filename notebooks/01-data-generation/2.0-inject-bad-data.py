@@ -139,7 +139,7 @@ for directory in directories.collect():
         read_file_write_bad_data(file_path,\
           null_columns=null_columns,\
           neg_columns=neg_columns,\
-          null_fraction=.03\
+          null_fraction=random.uniform(0.01, 0.05)\
             )
         print(f'Finished applying null and/or negative values to {file_name} file to {null_fraction * 100}% of values')
 
@@ -155,7 +155,7 @@ for directory in directories.collect():
         read_file_write_bad_data(file_path,\
           null_columns=null_columns,\
           neg_columns=neg_columns,\
-          null_fraction=.03\
+          null_fraction=random.uniform(0.01, 0.05)\
             )
         print(f'Finished applying null and/or negative values to {file_name} file to {null_fraction * 100}% of values')
 
@@ -170,7 +170,7 @@ for directory in directories.collect():
         read_file_write_bad_data(file_path,\
           null_columns=null_columns,\
           neg_columns=neg_columns,\
-          null_fraction=.03\
+          null_fraction=random.uniform(0.01, 0.05)\
             )
         print(f'Finished applying null and/or negative values to {file_name} file to {null_fraction * 100}% of values')      
 
@@ -185,7 +185,7 @@ for directory in directories.collect():
         read_file_write_bad_data(file_path,\
           null_columns=null_columns,\
           neg_columns=neg_columns,\
-          null_fraction=.03\
+          null_fraction=random.uniform(0.01, 0.05)\
             )
         print(f'Finished applying null and/or negative values to {file_name} file to {null_fraction * 100}% of values')  
 
@@ -200,6 +200,6 @@ for directory in directories.collect():
         read_file_write_bad_data(file_path,\
           null_columns=null_columns,\
           neg_columns=neg_columns,\
-          null_fraction=.03\
+          null_fraction=random.uniform(0.01, 0.05)\
             )
         print(f'Finished applying null and/or negative values to {file_name} file to {null_fraction * 100}% of values')

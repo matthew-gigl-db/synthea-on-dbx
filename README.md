@@ -37,18 +37,18 @@ The purpose of this repository is to allow a Databricks user to generate synthet
     **Files with bad data injected:**
     - **encounters**
         - Column(s) with null values: `PATIENT`
-            - Percent of values: 3%
+            - Percent of values: Randomly generated value between 1% - 5%
         - Column(s) with negative values: `PAYER_COVERAGE`
-            - Percent of values: 3%
+            - Percent of values: Randomly generated value between 1% - 5%
     - **claims_transactions**
         - Column(s) with negative values: `PAYMENTS`
-            - Percent of values: 3%
+            - Percent of values: Randomly generated value between 1% - 5%
     - **conditions**
         - Column(s) with negative values: `PATIENT, ENCOUNTER`
-            - Percent of values: 3%
+            - Percent of values: Randomly generated value between 1% - 5%
     - **medications**
         - Coulmn(s) with negative values: `TOTALCOST`
-            - Percent of values: 3%
+            - Percent of values: Randomly generated value between 1% - 5%
 
     d. **node_type_id**: If an **instance_pool_id** is not set, the **node_type_id** specifies which type of compute resouce will be used to create the assigned single node job cluster used to create and execute the workflow.  This defaults to *i3.xlarge*, which is an AWS **node_type_id**.  The Databricks Python SDK Workspace Client may be used to list the available node types in your workspace with `nodes = w.clusters.list_node_types()`.  Please review the Databricks Python SDK [documentation](https://docs.databricks.com/en/dev-tools/sdk-python.html) for more information. 
 

@@ -396,7 +396,7 @@ create_landing_zone_conditional = Task(
                 TaskDependency(
     task_key = "inject_bad_data"
     )]
-  ,run_if = RunIf("ALL_SUCCESS")
+  ,run_if = RunIf("AT_LEAST_ONE_SUCCESS")
   ,condition_task = ConditionTask(
     op = ConditionTaskOp("EQUAL_TO")
     ,left = "{{job.parameters.create_landing_zone}}"
