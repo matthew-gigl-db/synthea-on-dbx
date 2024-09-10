@@ -19,6 +19,8 @@ dbutils.widgets.text("catalog_name", "")
 dbutils.widgets.text("schema_name", "synthea")
 dbutils.widgets.text("instance_pool_id", "", "Optional Instance Pool ID for the Cluster Spec")
 dbutils.widgets.text("node_type_id", "i3.xlarge", "Node Type Id, Required if Instance Pool Id is not specified")
+dbutils.widgets.dropdown("create_landing_zone", "false", ["true", "false"], "Optional Create a landing zone")
+dbutils.widgets.dropdown("inject_bad_data", "true", ["true", "false"], "Optional inection of bad data to select files")
 
 # COMMAND ----------
 
@@ -27,6 +29,8 @@ catalog_name = dbutils.widgets.get("catalog_name")
 schema_name = dbutils.widgets.get("schema_name")
 instance_pool_id = dbutils.widgets.get("instance_pool_id")
 node_type_id = dbutils.widgets.get("node_type_id")
+create_landing_zone = dbutils.widgets.get("create_landing_zone").lower()
+inject_bad_data = dbutils.widgets.get("inject_bad_data").lower()
 
 # COMMAND ----------
 
@@ -36,6 +40,8 @@ f"""
 Based on user input's the job will write files into this catalog.schema's Volume:
 catalog_name = {catalog_name}
 schema_name = {schema_name}
+create_landing_zone = {create_landing_zone}
+inject_bad_data = {inject_bad_data}
 
 The Databricks workflow created by this notebook will write files into the following schema's Volume:
 /Volumes/{catalog_name}/{schema_name}/synthetic_files_raw/
@@ -89,6 +95,16 @@ Note that node_type_id will only be used if an instance_pool_id is not set.
 # DBTITLE 1,Import Databricks Cluster Configuration Modules
 from databricks.sdk.service.jobs import JobCluster
 from databricks.sdk.service.compute import ClusterSpec, DataSecurityMode, RuntimeEngine
+
+# COMMAND ----------
+
+# DBTITLE 1,Get the base path
+# get the base path of the current notebook so we can determine what all notebook paths for the workflow definitions are relative to
+full_path = dbutils.entry_point.getDbutils().notebook().getContext().notebookPath().getOrElse(None)
+path_parts = full_path.split("/")
+workflows_index = path_parts.index("workflows") 
+base_path = "/".join(path_parts[:workflows_index])
+print(f'The base path is: {base_path}')
 
 # COMMAND ----------
 
@@ -152,7 +168,7 @@ synthea_set_up_check = Task(
   ,run_if = RunIf("ALL_SUCCESS")
   ,job_cluster_key = job_cluster_key
   ,notebook_task = NotebookTask(
-    notebook_path = f"/Workspace/Users/{current_user.user_name}/synthea-on-dbx/notebooks/00-setup-notebooks/0.0-set-up-check"
+    notebook_path = f"{base_path}/notebooks/00-setup-notebooks/0.0-set-up-check"
     ,source = Source("WORKSPACE")
     ,base_parameters = dict("")
   )
@@ -211,7 +227,7 @@ uc_setup = Task(
   ,run_if = RunIf("ALL_SUCCESS")
   ,job_cluster_key = job_cluster_key
   ,notebook_task = NotebookTask(
-    notebook_path = f"/Workspace/Users/{current_user.user_name}/synthea-on-dbx/notebooks/00-setup-notebooks/0.1-uc-setup"
+    notebook_path = f"{base_path}/notebooks/00-setup-notebooks/0.1-uc-setup"
     ,source = Source("WORKSPACE")
     ,base_parameters = dict("")
   )
@@ -238,7 +254,7 @@ install_synthea = Task(
   ,run_if = RunIf("ALL_SUCCESS")
   ,job_cluster_key = job_cluster_key
   ,notebook_task = NotebookTask(
-    notebook_path = f"/Workspace/Users/{current_user.user_name}/synthea-on-dbx/notebooks/00-setup-notebooks/0.2-install-synthea"
+    notebook_path = f"{base_path}/notebooks/00-setup-notebooks/0.2-install-synthea"
     ,source = Source("WORKSPACE")
     ,base_parameters = dict("")
   )
@@ -265,7 +281,7 @@ configure_synthea = Task(
   ,run_if = RunIf("ALL_SUCCESS")
   ,job_cluster_key = job_cluster_key
   ,notebook_task = NotebookTask(
-    notebook_path = f"/Workspace/Users/{current_user.user_name}/synthea-on-dbx/notebooks/00-setup-notebooks/0.3-synthea-configuration"
+    notebook_path = f"{base_path}/notebooks/00-setup-notebooks/0.3-synthea-configuration"
     ,source = Source("WORKSPACE")
     ,base_parameters = dict("")
   )
@@ -298,7 +314,121 @@ generate_synthetic_data = Task(
   ,run_if = RunIf("AT_LEAST_ONE_SUCCESS")
   ,job_cluster_key = job_cluster_key
   ,notebook_task = NotebookTask(
-    notebook_path = f"/Workspace/Users/{current_user.user_name}/synthea-on-dbx/notebooks/01-data-generation/1.0-synthea-data-generator"
+    notebook_path = f"{base_path}/notebooks/01-data-generation/1.0-synthea-data-generator"
+    ,source = Source("WORKSPACE")
+    ,base_parameters = dict("")
+  )
+  ,timeout_seconds = 0
+  ,email_notifications = TaskEmailNotifications()
+  ,notification_settings = TaskNotificationSettings(
+    no_alert_for_skipped_runs = False
+    ,no_alert_for_canceled_runs = False
+    ,alert_on_last_attempt = False
+  )
+  ,webhook_notifications = WebhookNotifications()
+)
+
+# COMMAND ----------
+
+# task 6:  inject_data_quality
+inject_data_quality_conditional = Task(
+  task_key = "inject_bad_data_conditional"
+  ,description = "Check if the user opted to create the landing zone using the job parameter create_landing_zone upon initializing the workflow"
+  ,depends_on = [TaskDependency(
+    task_key = "generate_synthetic_data"
+  )]
+  ,run_if = RunIf("ALL_SUCCESS")
+  ,condition_task = ConditionTask(
+    op = ConditionTaskOp("EQUAL_TO")
+    ,left = "{{job.parameters.inject_bad_data}}"
+    ,right = "true"
+  )
+  ,timeout_seconds = 0
+  ,email_notifications = TaskEmailNotifications()
+  ,notification_settings = TaskNotificationSettings(
+    no_alert_for_skipped_runs = False
+    ,no_alert_for_canceled_runs = False
+    ,alert_on_last_attempt = False
+  )
+  ,webhook_notifications = WebhookNotifications()
+)
+
+# COMMAND ----------
+
+# DBTITLE 1,inject_bad_data task
+# task 7: inject_bad_data
+inject_data_quality = Task(
+  task_key = "inject_bad_data"
+  ,description = "Check if the user opted to create the landing zone using the job parameter create_landing_zone upon initializing the workflow"
+  ,depends_on = [
+    TaskDependency(
+      task_key = "inject_bad_data_conditional"
+      ,outcome = "true"
+    )
+  ]
+  ,run_if = RunIf("ALL_SUCCESS")
+  ,job_cluster_key = job_cluster_key
+  ,notebook_task = NotebookTask(
+    notebook_path = f"{base_path}/notebooks/01-data-generation/2.0-inject-bad-data"
+    ,source = Source("WORKSPACE")
+    ,base_parameters = dict("")
+  )
+  ,timeout_seconds = 0
+  ,email_notifications = TaskEmailNotifications()
+  ,notification_settings = TaskNotificationSettings(
+    no_alert_for_skipped_runs = False
+    ,no_alert_for_canceled_runs = False
+    ,alert_on_last_attempt = False
+  )
+  ,webhook_notifications = WebhookNotifications()
+)
+
+# COMMAND ----------
+
+# DBTITLE 1,Evaluate if creating landing zone
+# task 8:  create_landing_zone_conditional
+create_landing_zone_conditional = Task(
+  task_key = "create_landing_zone_conditional"
+  ,description = "Check if the user opted to create the landing zone using the job parameter create_landing_zone upon initializing the workflow"
+  ,depends_on = [TaskDependency(
+    task_key = "generate_synthetic_data"
+  ),
+                TaskDependency(
+    task_key = "inject_bad_data"
+    )]
+  ,run_if = RunIf("AT_LEAST_ONE_SUCCESS")
+  ,condition_task = ConditionTask(
+    op = ConditionTaskOp("EQUAL_TO")
+    ,left = "{{job.parameters.create_landing_zone}}"
+    ,right = "true"
+  )
+  ,timeout_seconds = 0
+  ,email_notifications = TaskEmailNotifications()
+  ,notification_settings = TaskNotificationSettings(
+    no_alert_for_skipped_runs = False
+    ,no_alert_for_canceled_runs = False
+    ,alert_on_last_attempt = False
+  )
+  ,webhook_notifications = WebhookNotifications()
+)
+
+# COMMAND ----------
+
+# DBTITLE 1,Copy Files to Landing Zone
+# task 9: copy_files_to_landing_zone
+copy_files_to_landing_zone = Task(
+  task_key = "copy_files_to_landing_zone"
+  ,description = "Copy new files from synthea_raw_files volume to landing volume"
+  ,depends_on = [
+    TaskDependency(
+      task_key = "create_landing_zone_conditional"
+      ,outcome = "true"
+    )
+  ]
+  ,run_if = RunIf("ALL_SUCCESS")
+  ,job_cluster_key = job_cluster_key
+  ,notebook_task = NotebookTask(
+    notebook_path = f"{base_path}/notebooks/01-data-generation/3.0-move-synthea-files-to-landing"
     ,source = Source("WORKSPACE")
     ,base_parameters = dict("")
   )
@@ -345,6 +475,10 @@ j = w.jobs.create(
     ,install_synthea
     ,configure_synthea
     ,generate_synthetic_data
+    ,inject_data_quality_conditional
+    ,inject_data_quality    
+    ,create_landing_zone_conditional
+    ,copy_files_to_landing_zone
   ]
   ,job_clusters = [cluster_spec]
   ,queue = QueueSettings(enabled = True)
@@ -359,6 +493,16 @@ j = w.jobs.create(
       ,default = schema_name
       ,value = schema_name
     )
+    ,JobParameter(
+      name = "create_landing_zone"
+      ,default = create_landing_zone
+      ,value = create_landing_zone
+    )
+    ,JobParameter(
+      name = "inject_bad_data"
+      ,default = inject_bad_data
+      ,value = inject_bad_data
+    )    
   ]
   ,run_as = JobRunAs(
     user_name = current_user.user_name
