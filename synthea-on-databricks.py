@@ -71,6 +71,11 @@ w = WorkspaceClient()
 
 # COMMAND ----------
 
+current_user = w.current_user.me()
+current_user.name
+
+# COMMAND ----------
+
 # DBTITLE 1,Post Synthea Workflow to Databricks
 post_job_result = dbutils.notebook.run(
   path = "workflows/synthea-on-dbx-create-workflow"
