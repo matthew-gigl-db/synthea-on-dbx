@@ -67,8 +67,8 @@ latest_lts_version = w.clusters.select_spark_version(latest=True, long_term_supp
 
 # DBTITLE 1,Synthetic Data Deneration Job Inputs
 if current_user.name.family_name == None:
-    job_name = current_user.name.given_name.lower() + "-" + current_user.id + "-synthea-data-generation"
-    job_cluster_key = current_user.name.given_name.lower() + "-" + current_user.id + "-synthea-data-gen"
+    job_name = current_user.id + "-synthea-data-generation"
+    job_cluster_key = current_user.id + "-synthea-data-gen"
 else:
     job_name = current_user.name.family_name.lower() + "-" + current_user.id + "-synthea-data-generation"
     job_cluster_key = current_user.name.family_name.lower() + "-" + current_user.id + "-synthea-data-gen"
