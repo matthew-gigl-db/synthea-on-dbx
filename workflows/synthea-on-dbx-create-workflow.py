@@ -394,12 +394,15 @@ inject_data_quality = Task(
 create_landing_zone_conditional = Task(
   task_key = "create_landing_zone_conditional"
   ,description = "Check if the user opted to create the landing zone using the job parameter create_landing_zone upon initializing the workflow"
-  ,depends_on = [TaskDependency(
-    task_key = "generate_synthetic_data"
-  ),
-                TaskDependency(
-    task_key = "inject_bad_data"
-    )]
+  ,depends_on = [
+    TaskDependency(
+      task_key = "inject_bad_data_conditional"
+      ,outcome = "false"
+    ),
+    TaskDependency(
+      task_key = "inject_bad_data"
+    )
+  ]
   ,run_if = RunIf("AT_LEAST_ONE_SUCCESS")
   ,condition_task = ConditionTask(
     op = ConditionTaskOp("EQUAL_TO")
