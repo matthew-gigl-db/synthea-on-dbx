@@ -373,7 +373,7 @@ inject_data_quality = Task(
   ,run_if = RunIf("ALL_SUCCESS")
   ,job_cluster_key = job_cluster_key
   ,notebook_task = NotebookTask(
-    notebook_path = f"{base_path}/notebooks/01-data-generation/2.0-inject-bad-data"
+    notebook_path = f"{base_path}/notebooks/01-data-generation/1.1-inject-bad-data"
     ,source = Source("WORKSPACE")
     ,base_parameters = dict("")
   )
@@ -435,7 +435,7 @@ copy_files_to_landing_zone = Task(
   ,run_if = RunIf("ALL_SUCCESS")
   ,job_cluster_key = job_cluster_key
   ,notebook_task = NotebookTask(
-    notebook_path = f"{base_path}/notebooks/01-data-generation/3.0-move-synthea-files-to-landing"
+    notebook_path = f"{base_path}/notebooks/01-data-generation/1.2-move-synthea-files-to-landing"
     ,source = Source("WORKSPACE")
     ,base_parameters = dict("")
   )

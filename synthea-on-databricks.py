@@ -169,7 +169,7 @@ runs_pandas
 # COMMAND ----------
 
 # cleanup_result = dbutils.notebook.run(
-#   path = "notebooks/02-clean-up"
+#   path = "notebooks/02-clean-up/2.0-clean-up"
 #   ,timeout_seconds = 150
 #   ,arguments = {
 #     "catalog_name": catalog_name
