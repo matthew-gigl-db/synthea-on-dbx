@@ -14,11 +14,42 @@ dbutils.library.restartPython()
 
 # COMMAND ----------
 
+# DBTITLE 1,Databricks Workspace Client
+from databricks.sdk import WorkspaceClient
+
+w = WorkspaceClient()
+
+# COMMAND ----------
+
+from pyspark.sql.functions import col
+
+# COMMAND ----------
+
+# DBTITLE 1,Determine Smallest Available General Purpose x86 Node Type Available
+nodes = w.clusters.list_node_types()
+nodes_list = [node.as_dict() for node in nodes.node_types]
+nodes_df = spark.createDataFrame(nodes_list)
+node_type_id = (
+  nodes_df
+  .filter(col("is_deprecated") == False)
+  .filter(col("category") == "General Purpose")
+  .filter(col("num_gpus") == 0)
+  .filter(col("photon_driver_capable") == True)
+  .filter(col("is_graviton") == False)
+  .orderBy(col("memory_mb"), col("num_cores"))
+  .select(col("node_type_id"))
+  .limit(1)
+  .collect()[0][0]
+)
+display(node_type_id)
+
+# COMMAND ----------
+
 # DBTITLE 1,Dashboard Widget Configuration
 dbutils.widgets.text("catalog_name", "")
 dbutils.widgets.text("schema_name", "synthea")
 dbutils.widgets.text("instance_pool_id", "", "Optional Instance Pool ID for the Cluster Spec")
-dbutils.widgets.text("node_type_id", "i3.xlarge", "Node Type Id, Required if Instance Pool Id is not specified")
+# dbutils.widgets.text("node_type_id", "i3.xlarge", "Node Type Id, Required if Instance Pool Id is not specified")
 dbutils.widgets.text("number_of_job_runs", "1", "Number of times to run the job")
 dbutils.widgets.dropdown("create_landing_zone", "true", ["true", "false"], "Optional Create a landing zone")
 dbutils.widgets.dropdown("inject_bad_data", "true", ["true", "false"], "Optional injection of bad data to select files")
@@ -29,7 +60,7 @@ dbutils.widgets.dropdown("inject_bad_data", "true", ["true", "false"], "Optional
 catalog_name = dbutils.widgets.get("catalog_name")
 schema_name = dbutils.widgets.get("schema_name")
 instance_pool_id = dbutils.widgets.get("instance_pool_id")
-node_type_id = dbutils.widgets.get("node_type_id")
+# node_type_id = dbutils.widgets.get("node_type_id")
 number_of_job_runs = int(dbutils.widgets.get("number_of_job_runs"))
 create_landing_zone = dbutils.widgets.get("create_landing_zone").lower()
 inject_bad_data = dbutils.widgets.get("inject_bad_data").lower()
@@ -61,13 +92,6 @@ Note that node_type_id will only be used if an instance_pool_id is not set.  Bri
 Number of times the Databricks workflow will be executed to simulate variability in patient record creation: number_of_job_runs = {number_of_job_runs}
 """
 )
-
-# COMMAND ----------
-
-# DBTITLE 1,Databricks Workspace Client
-from databricks.sdk import WorkspaceClient
-
-w = WorkspaceClient()
 
 # COMMAND ----------
 
@@ -139,8 +163,8 @@ for i in range(0, number_of_job_runs):
         "catalog_name": catalog_name
         ,"schema_name": schema_name
         ,"create_landing_zone": create_landing_zone
-        ,"inject_bad_data": inject_bad_data        
-      } 
+        ,"inject_bad_data": inject_bad_data
+      }
     )
 
 # COMMAND ----------
