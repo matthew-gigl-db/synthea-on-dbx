@@ -524,6 +524,9 @@ else:
 # DBTITLE 1,Create Synthea Data Generation Workflow
 print("Attempting to create the job. Please wait...\n")
 
+if serverless == "false":
+  cluster_spec = [cluster_spec]
+
 j = w.jobs.create(
   name = job_name
   ,description = job_description
@@ -535,11 +538,11 @@ j = w.jobs.create(
     ,configure_synthea
     ,generate_synthetic_data
     ,inject_data_quality_conditional
-    ,inject_data_quality    
+    ,inject_data_quality
     ,create_landing_zone_conditional
     ,copy_files_to_landing_zone
   ]
-  ,job_clusters = [cluster_spec]
+  ,job_clusters = cluster_spec
   ,queue = QueueSettings(enabled = True)
   ,parameters = [
     JobParameter(
