@@ -17,10 +17,29 @@ dbutils.library.restartPython()
 # DBTITLE 1,Set Databricks Widgets
 dbutils.widgets.text("catalog_name", "")
 dbutils.widgets.text("schema_name", "synthea")
-dbutils.widgets.text("instance_pool_id", "", "Optional Instance Pool ID for the Cluster Spec")
-dbutils.widgets.text("node_type_id", "i3.xlarge", "Node Type Id, Required if Instance Pool Id is not specified")
-dbutils.widgets.dropdown("create_landing_zone", "false", ["true", "false"], "Optional Create a landing zone")
-dbutils.widgets.dropdown("inject_bad_data", "true", ["true", "false"], "Optional inection of bad data to select files")
+dbutils.widgets.text(
+    "instance_pool_id", "", "Optional Instance Pool ID for the Cluster Spec"
+)
+dbutils.widgets.text(
+    "node_type_id",
+    "i3.xlarge",
+    "Node Type Id, Required if Instance Pool Id is not specified",
+)
+dbutils.widgets.dropdown(
+    "create_landing_zone", "false", ["true", "false"], "Optional Create a landing zone"
+)
+dbutils.widgets.dropdown(
+    "inject_bad_data",
+    "true",
+    ["true", "false"],
+    "Optional inection of bad data to select files",
+)
+dbutils.widgets.dropdown(
+  "serverless"
+  ,"false"
+  ,["true", "false"]
+  ,"Serverless Job Mode"
+)
 
 # COMMAND ----------
 
@@ -31,17 +50,19 @@ instance_pool_id = dbutils.widgets.get("instance_pool_id")
 node_type_id = dbutils.widgets.get("node_type_id")
 create_landing_zone = dbutils.widgets.get("create_landing_zone").lower()
 inject_bad_data = dbutils.widgets.get("inject_bad_data").lower()
+serverless = dbutils.widgets.get("serverless").lower()
 
 # COMMAND ----------
 
 # DBTITLE 1,File Destination Information
 print(
-f"""
+    f"""
 Based on user input's the job will write files into this catalog.schema's Volume:
 catalog_name = {catalog_name}
 schema_name = {schema_name}
 create_landing_zone = {create_landing_zone}
 inject_bad_data = {inject_bad_data}
+serveless = {serverless}
 
 The Databricks workflow created by this notebook will write files into the following schema's Volume:
 /Volumes/{catalog_name}/{schema_name}/synthetic_files_raw/
@@ -61,20 +82,37 @@ w = WorkspaceClient()
 
 # DBTITLE 1,Get Current User and Spark Version
 current_user = w.current_user.me()
-latest_lts_version = w.clusters.select_spark_version(latest=True, long_term_support=True)
+latest_lts_version = w.clusters.select_spark_version(
+    latest=True, long_term_support=True
+)
+
+# COMMAND ----------
+
+if current_user.name.family_name is None:
+    current_user.name.family_name = (
+        current_user.user_name.split("@", 1)[0].strip(" ").replace(".", "_").lower()
+    )
+print(current_user.name.family_name)
 
 # COMMAND ----------
 
 # DBTITLE 1,Synthetic Data Deneration Job Inputs
-job_name = current_user.name.family_name.lower() + "-" + current_user.id + "-synthea-data-generation"
-job_cluster_key = current_user.name.family_name.lower() + "-" + current_user.id + "-synthea-data-gen"
+job_name = (
+    current_user.name.family_name.lower()
+    + "-"
+    + current_user.id
+    + "-synthea-data-generation"
+)
+job_cluster_key = (
+    current_user.name.family_name.lower() + "-" + current_user.id + "-synthea-data-gen"
+)
 job_description = f"Job to generate synthetic data for {current_user.user_name} in /Volumes/{catalog_name}/{schema_name}/synthetic_files_raw/ using the synthea library jar."
 
 # COMMAND ----------
 
 # DBTITLE 1,Print Job Inputs
 print(
-f"""
+    f"""
 Current user: {current_user.user_name}
 Latest LTS version: {latest_lts_version}
 
@@ -100,63 +138,84 @@ from databricks.sdk.service.compute import ClusterSpec, DataSecurityMode, Runtim
 
 # DBTITLE 1,Get the base path
 # get the base path of the current notebook so we can determine what all notebook paths for the workflow definitions are relative to
-full_path = dbutils.entry_point.getDbutils().notebook().getContext().notebookPath().getOrElse(None)
+full_path = (
+    dbutils.entry_point.getDbutils()
+    .notebook()
+    .getContext()
+    .notebookPath()
+    .getOrElse(None)
+)
 path_parts = full_path.split("/")
-workflows_index = path_parts.index("workflows") 
+workflows_index = path_parts.index("workflows")
 base_path = "/".join(path_parts[:workflows_index])
-print(f'The base path is: {base_path}')
+print(f"The base path is: {base_path}")
 
 # COMMAND ----------
 
 # DBTITLE 1,Job Cluster Specification Creation
-if instance_pool_id == "": 
-  cluster_spec = JobCluster(
-    job_cluster_key = job_cluster_key
-    ,new_cluster = ClusterSpec(
-      spark_version = latest_lts_version
-      ,spark_conf = {
-        "spark.master": "local[*, 4]",
-        "spark.databricks.cluster.profile": "singleNode"
-      }
-      ,custom_tags = {
-        "ResourceClass": "SingleNode"
-      }
-      ,spark_env_vars = {
-        "JNAME": "zulu17-ca-amd64"
-      }
-      ,data_security_mode = DataSecurityMode("SINGLE_USER")
-      ,runtime_engine = RuntimeEngine("STANDARD")
-      ,num_workers = 0
-      ,node_type_id = node_type_id
-    )
-  )
+if serverless == "true":
+  cluster_spec = None
+  job_cluster_key = None
 else:
-  cluster_spec = JobCluster(
-    job_cluster_key = job_cluster_key
-    ,new_cluster = ClusterSpec(
-      spark_version = latest_lts_version
-      ,spark_conf = {
-        "spark.master": "local[*, 4]",
-        "spark.databricks.cluster.profile": "singleNode"
-      }
-      ,custom_tags = {
-        "ResourceClass": "SingleNode"
-      }
-      ,spark_env_vars = {
-        "JNAME": "zulu17-ca-amd64"
-      }
-      ,instance_pool_id = instance_pool_id
-      ,driver_instance_pool_id = instance_pool_id
-      ,data_security_mode = DataSecurityMode("SINGLE_USER")
-      ,runtime_engine = RuntimeEngine("STANDARD")
-      ,num_workers = 0
+  if instance_pool_id == "": 
+    cluster_spec = JobCluster(
+      job_cluster_key = job_cluster_key
+      ,new_cluster = ClusterSpec(
+        spark_version = latest_lts_version
+        ,spark_conf = {
+          "spark.master": "local[*, 4]",
+          "spark.databricks.cluster.profile": "singleNode"
+        }
+        ,custom_tags = {
+          "ResourceClass": "SingleNode"
+        }
+        ,spark_env_vars = {
+          "JNAME": "zulu17-ca-amd64"
+        }
+        ,data_security_mode = DataSecurityMode("SINGLE_USER")
+        ,runtime_engine = RuntimeEngine("STANDARD")
+        ,num_workers = 0
+        ,node_type_id = node_type_id
+      )
     )
-  )
+  else:
+    cluster_spec = JobCluster(
+      job_cluster_key = job_cluster_key
+      ,new_cluster = ClusterSpec(
+        spark_version = latest_lts_version
+        ,spark_conf = {
+          "spark.master": "local[*, 4]",
+          "spark.databricks.cluster.profile": "singleNode"
+        }
+        ,custom_tags = {
+          "ResourceClass": "SingleNode"
+        }
+        ,spark_env_vars = {
+          "JNAME": "zulu17-ca-amd64"
+        }
+        ,instance_pool_id = instance_pool_id
+        ,driver_instance_pool_id = instance_pool_id
+        ,data_security_mode = DataSecurityMode("SINGLE_USER")
+        ,runtime_engine = RuntimeEngine("STANDARD")
+        ,num_workers = 0
+      )
+    )
 
 # COMMAND ----------
 
 # DBTITLE 1,Import Databricks SDK Job and Task Configuration Modules
-from databricks.sdk.service.jobs import Source, Task, NotebookTask, TaskEmailNotifications, TaskNotificationSettings, WebhookNotifications, RunIf, QueueSettings, JobParameter, JobRunAs
+from databricks.sdk.service.jobs import (
+    Source,
+    Task,
+    NotebookTask,
+    TaskEmailNotifications,
+    TaskNotificationSettings,
+    WebhookNotifications,
+    RunIf,
+    QueueSettings,
+    JobParameter,
+    JobRunAs
+)
 
 # COMMAND ----------
 
