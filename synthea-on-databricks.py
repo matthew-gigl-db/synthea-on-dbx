@@ -97,7 +97,7 @@ Number of times the Databricks workflow will be executed to simulate variability
 
 # DBTITLE 1,Post Synthea Workflow to Databricks
 post_job_result = dbutils.notebook.run(
-  path = "workflows/synthea-on-dbx-create-workflow"
+  path = "workflows/synthea-on-dbx-create-workflow" 
   ,timeout_seconds = 150
   ,arguments = {
     "catalog_name": catalog_name

@@ -55,7 +55,7 @@ print(f"""
 # COMMAND ----------
 
 # DBTITLE 1,set synthea config widgets
-dbutils.widgets.dropdown(name = "ccda", defaultValue = "false", choices = ("true", "false"), label="CCDA Export")
+dbutils.widgets.dropdown(name = "ccda", defaultValue = "true", choices = ("true", "false"), label="CCDA Export")
 dbutils.widgets.dropdown(name = "fhir", defaultValue = "true", choices = ("true", "false"), label="FHIR Export")
 dbutils.widgets.dropdown(name = "csv", defaultValue = "true", choices = ("true", "false"), label="CSV Export")
 dbutils.widgets.dropdown(name = "csv_folder_per_run", defaultValue = "true", choices = ("true", "false"), label="CSV Folder Per Run")
