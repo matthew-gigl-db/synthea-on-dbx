@@ -40,6 +40,8 @@ dbutils.widgets.dropdown(
   ,["true", "false"]
   ,"Serverless Job Mode"
 )
+dbutils.widgets.text(name = "min_records", defaultValue="1", label = "Minimum Generated Record Count")
+dbutils.widgets.text(name = "max_records", defaultValue="1000", label = "Maximum Generated Record Count")
 
 # COMMAND ----------
 
@@ -51,6 +53,8 @@ node_type_id = dbutils.widgets.get("node_type_id")
 create_landing_zone = dbutils.widgets.get("create_landing_zone").lower()
 inject_bad_data = dbutils.widgets.get("inject_bad_data").lower()
 serverless = dbutils.widgets.get("serverless").lower()
+min_records = int(dbutils.widgets.get("min_records"))
+max_records = int(dbutils.widgets.get("max_records"))
 
 # COMMAND ----------
 
@@ -564,7 +568,17 @@ j = w.jobs.create(
       name = "inject_bad_data"
       ,default = inject_bad_data
       ,value = inject_bad_data
-    )    
+    )
+    ,JobParameter(
+      name = "min_records"
+      ,default = min_records
+      ,value = min_records
+    )   
+    ,JobParameter(
+      name = "max_records"
+      ,default = max_records
+      ,value = max_records
+    )  
   ]
   ,run_as = JobRunAs(
     user_name = current_user.user_name
