@@ -53,6 +53,8 @@ dbutils.widgets.text("instance_pool_id", "", "Optional Instance Pool ID for the 
 dbutils.widgets.text("number_of_job_runs", "1", "Number of times to run the job")
 dbutils.widgets.dropdown("create_landing_zone", "true", ["true", "false"], "Optional Create a landing zone")
 dbutils.widgets.dropdown("inject_bad_data", "true", ["true", "false"], "Optional injection of bad data to select files")
+dbutils.widgets.text(name = "min_records", defaultValue="1", label = "Minimum Generated Record Count")
+dbutils.widgets.text(name = "max_records", defaultValue="1000", label = "Maximum Generated Record Count")
 
 # COMMAND ----------
 
@@ -64,6 +66,8 @@ instance_pool_id = dbutils.widgets.get("instance_pool_id")
 number_of_job_runs = int(dbutils.widgets.get("number_of_job_runs"))
 create_landing_zone = dbutils.widgets.get("create_landing_zone").lower()
 inject_bad_data = dbutils.widgets.get("inject_bad_data").lower()
+min_records = int(dbutils.widgets.get("min_records"))
+max_records = int(dbutils.widgets.get("max_records"))
 
 # COMMAND ----------
 
@@ -105,7 +109,9 @@ post_job_result = dbutils.notebook.run(
     ,"create_landing_zone": create_landing_zone
     ,"instance_pool_id": instance_pool_id
     ,"node_type_id": node_type_id
-    ,"inject_bad_data": inject_bad_data  
+    ,"inject_bad_data": inject_bad_data
+    ,"min_records": min_records
+    ,"max_records": max_records  
   }
 )
 
