@@ -29,13 +29,17 @@ from pyspark.sql.functions import col
 nodes = w.clusters.list_node_types()
 nodes_list = [node.as_dict() for node in nodes.node_types]
 nodes_df = spark.createDataFrame(nodes_list)
+# display(nodes_df)
 node_type_id = (
   nodes_df
   .filter(col("is_deprecated") == False)
   .filter(col("category") == "General Purpose")
   .filter(col("num_gpus") == 0)
   .filter(col("photon_driver_capable") == True)
+  .filter(col("photon_worker_capable") == True)
+  .filter(col("support_cluster_tags") == True)
   .filter(col("is_graviton") == False)
+  .filter(col("is_hidden") == False)
   .orderBy(col("memory_mb"), col("num_cores"))
   .select(col("node_type_id"))
   .limit(1)
