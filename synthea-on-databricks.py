@@ -1,4 +1,10 @@
 # Databricks notebook source
+# DBTITLE 1,Check Java Version of Serverless
+# MAGIC %sh
+# MAGIC java -version
+
+# COMMAND ----------
+
 # DBTITLE 1,install databricks sdk upgrade
 # MAGIC %pip install databricks-sdk --upgrade
 
@@ -29,7 +35,7 @@ from pyspark.sql.functions import col
 nodes = w.clusters.list_node_types()
 nodes_list = [node.as_dict() for node in nodes.node_types]
 nodes_df = spark.createDataFrame(nodes_list)
-display(nodes_df)
+# display(nodes_df)
 node_type_id = (
   nodes_df
   .filter(col("is_deprecated") == False)
@@ -46,7 +52,7 @@ node_type_id = (
   .limit(1)
   .collect()[0][0]
 )
-display(node_type_id)
+node_type_id
 
 # COMMAND ----------
 
@@ -54,12 +60,17 @@ display(node_type_id)
 dbutils.widgets.text("catalog_name", "")
 dbutils.widgets.text("schema_name", "synthea")
 dbutils.widgets.text("instance_pool_id", "", "Optional Instance Pool ID for the Cluster Spec")
-# dbutils.widgets.text("node_type_id", "i3.xlarge", "Node Type Id, Required if Instance Pool Id is not specified")
 dbutils.widgets.text("number_of_job_runs", "1", "Number of times to run the job")
 dbutils.widgets.dropdown("create_landing_zone", "true", ["true", "false"], "Optional Create a landing zone")
 dbutils.widgets.dropdown("inject_bad_data", "true", ["true", "false"], "Optional injection of bad data to select files")
 dbutils.widgets.text(name = "min_records", defaultValue="1", label = "Minimum Generated Record Count")
 dbutils.widgets.text(name = "max_records", defaultValue="1000", label = "Maximum Generated Record Count")
+# dbutils.widgets.dropdown(
+#   "serverless"
+#   ,"false"
+#   ,["true", "false"]
+#   ,"Serverless Job Mode"
+# )
 
 # COMMAND ----------
 
@@ -67,12 +78,12 @@ dbutils.widgets.text(name = "max_records", defaultValue="1000", label = "Maximum
 catalog_name = dbutils.widgets.get("catalog_name")
 schema_name = dbutils.widgets.get("schema_name")
 instance_pool_id = dbutils.widgets.get("instance_pool_id")
-# node_type_id = dbutils.widgets.get("node_type_id")
 number_of_job_runs = int(dbutils.widgets.get("number_of_job_runs"))
 create_landing_zone = dbutils.widgets.get("create_landing_zone").lower()
 inject_bad_data = dbutils.widgets.get("inject_bad_data").lower()
 min_records = int(dbutils.widgets.get("min_records"))
 max_records = int(dbutils.widgets.get("max_records"))
+# serverless = dbutils.widgets.get("serverless").lower()
 
 # COMMAND ----------
 
@@ -117,6 +128,7 @@ post_job_result = dbutils.notebook.run(
     ,"inject_bad_data": inject_bad_data
     ,"min_records": min_records
     ,"max_records": max_records  
+    ,"serverless": serverless
   }
 )
 
