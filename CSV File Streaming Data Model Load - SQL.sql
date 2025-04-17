@@ -1,13 +1,13 @@
 -- Databricks notebook source
 DECLARE OR REPLACE VARIABLE catalog_name STRING DEFAULT "main";
 DECLARE OR REPLACE VARIABLE schema_name STRING DEFAULT "synthea";
-DECLARE OR REPLACE VARIABLE drop_tables BOOLEAN DEFAULT true;
+DECLARE OR REPLACE VARIABLE full_refresh BOOLEAN DEFAULT false;
 
 -- COMMAND ----------
 
 SET VARIABLE catalog_name = :catalog_name; 
 SET VARIABLE schema_name = :schema_name;
-SET VARIABLE drop_tables = CASE WHEN :drop_tables = 'true' THEN true ELSE false END;  
+SET VARIABLE full_refresh = CASE WHEN :full_refresh = 'true' THEN true ELSE false END;  
 
 -- COMMAND ----------
 
