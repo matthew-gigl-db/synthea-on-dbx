@@ -46,7 +46,7 @@ node_type_id = (
   .filter(col("support_cluster_tags") == True)
   .filter(col("is_graviton") == False)
   .filter(col("is_hidden") == False)
-  .filter(col("num_cores") >= 4)
+  .filter(col("num_cores") >= 6)
   .orderBy(col("display_order"), col("memory_mb"), col("num_cores"))
   .select(col("node_type_id"))
   .limit(1)
@@ -106,8 +106,6 @@ Please note that is the catalog, schema, or Volume do not exist, the workflow no
 Cluster Specification Details: 
 instance_pool_id = {instance_pool_id}
 node_type_id = {node_type_id}
-
-Note that node_type_id will only be used if an instance_pool_id is not set.  Bricksters on e2-demo-field-eng may use instance_pool_id = 0727-104344-hauls13-pool-uftxk0r6.  
 
 Number of times the Databricks workflow will be executed to simulate variability in patient record creation: number_of_job_runs = {number_of_job_runs}
 """
