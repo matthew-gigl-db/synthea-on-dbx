@@ -31,7 +31,7 @@ from pyspark.sql.functions import col
 
 # COMMAND ----------
 
-# DBTITLE 1,Determine Smallest Available General Purpose x86 Node Type Available
+# DBTITLE 1,Determine Smallest Available Memory Optimized x86 Node Type Available
 nodes = w.clusters.list_node_types()
 nodes_list = [node.as_dict() for node in nodes.node_types]
 nodes_df = spark.createDataFrame(nodes_list)
