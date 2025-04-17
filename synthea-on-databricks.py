@@ -65,12 +65,12 @@ dbutils.widgets.dropdown("create_landing_zone", "true", ["true", "false"], "Opti
 dbutils.widgets.dropdown("inject_bad_data", "true", ["true", "false"], "Optional injection of bad data to select files")
 dbutils.widgets.text(name = "min_records", defaultValue="1", label = "Minimum Generated Record Count")
 dbutils.widgets.text(name = "max_records", defaultValue="1000", label = "Maximum Generated Record Count")
-# dbutils.widgets.dropdown(
-#   "serverless"
-#   ,"false"
-#   ,["true", "false"]
-#   ,"Serverless Job Mode"
-# )
+dbutils.widgets.dropdown(
+  "serverless"
+  ,"false"
+  ,[ "false"] # must be false until after sreverless moves to 16 LTS release
+  ,"Serverless Job Mode"
+)
 
 # COMMAND ----------
 
@@ -83,7 +83,7 @@ create_landing_zone = dbutils.widgets.get("create_landing_zone").lower()
 inject_bad_data = dbutils.widgets.get("inject_bad_data").lower()
 min_records = int(dbutils.widgets.get("min_records"))
 max_records = int(dbutils.widgets.get("max_records"))
-# serverless = dbutils.widgets.get("serverless").lower()
+serverless = dbutils.widgets.get("serverless").lower()
 
 # COMMAND ----------
 
