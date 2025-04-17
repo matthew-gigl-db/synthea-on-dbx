@@ -1,4 +1,10 @@
 # Databricks notebook source
+# DBTITLE 1,Check Java Version of Serverless
+# MAGIC %sh
+# MAGIC java -version
+
+# COMMAND ----------
+
 # DBTITLE 1,install databricks sdk upgrade
 # MAGIC %pip install databricks-sdk --upgrade
 
@@ -25,23 +31,28 @@ from pyspark.sql.functions import col
 
 # COMMAND ----------
 
-# DBTITLE 1,Determine Smallest Available General Purpose x86 Node Type Available
+# DBTITLE 1,Determine Smallest Available Memory Optimized x86 Node Type Available
 nodes = w.clusters.list_node_types()
 nodes_list = [node.as_dict() for node in nodes.node_types]
 nodes_df = spark.createDataFrame(nodes_list)
+# display(nodes_df)
 node_type_id = (
   nodes_df
   .filter(col("is_deprecated") == False)
-  .filter(col("category") == "General Purpose")
+  .filter(col("category") == "Memory Optimized")
   .filter(col("num_gpus") == 0)
   .filter(col("photon_driver_capable") == True)
+  .filter(col("photon_worker_capable") == True)
+  .filter(col("support_cluster_tags") == True)
   .filter(col("is_graviton") == False)
-  .orderBy(col("memory_mb"), col("num_cores"))
+  .filter(col("is_hidden") == False)
+  .filter(col("num_cores") >= 6)
+  .orderBy(col("display_order"), col("memory_mb"), col("num_cores"))
   .select(col("node_type_id"))
   .limit(1)
   .collect()[0][0]
 )
-display(node_type_id)
+node_type_id
 
 # COMMAND ----------
 
@@ -49,12 +60,17 @@ display(node_type_id)
 dbutils.widgets.text("catalog_name", "")
 dbutils.widgets.text("schema_name", "synthea")
 dbutils.widgets.text("instance_pool_id", "", "Optional Instance Pool ID for the Cluster Spec")
-# dbutils.widgets.text("node_type_id", "i3.xlarge", "Node Type Id, Required if Instance Pool Id is not specified")
 dbutils.widgets.text("number_of_job_runs", "1", "Number of times to run the job")
 dbutils.widgets.dropdown("create_landing_zone", "true", ["true", "false"], "Optional Create a landing zone")
 dbutils.widgets.dropdown("inject_bad_data", "true", ["true", "false"], "Optional injection of bad data to select files")
 dbutils.widgets.text(name = "min_records", defaultValue="1", label = "Minimum Generated Record Count")
 dbutils.widgets.text(name = "max_records", defaultValue="1000", label = "Maximum Generated Record Count")
+dbutils.widgets.dropdown(
+  "serverless"
+  ,"false"
+  ,[ "false"] # must be false until after sreverless moves to 16 LTS release
+  ,"Serverless Job Mode"
+)
 
 # COMMAND ----------
 
@@ -62,12 +78,12 @@ dbutils.widgets.text(name = "max_records", defaultValue="1000", label = "Maximum
 catalog_name = dbutils.widgets.get("catalog_name")
 schema_name = dbutils.widgets.get("schema_name")
 instance_pool_id = dbutils.widgets.get("instance_pool_id")
-# node_type_id = dbutils.widgets.get("node_type_id")
 number_of_job_runs = int(dbutils.widgets.get("number_of_job_runs"))
 create_landing_zone = dbutils.widgets.get("create_landing_zone").lower()
 inject_bad_data = dbutils.widgets.get("inject_bad_data").lower()
 min_records = int(dbutils.widgets.get("min_records"))
 max_records = int(dbutils.widgets.get("max_records"))
+serverless = dbutils.widgets.get("serverless").lower()
 
 # COMMAND ----------
 
@@ -91,8 +107,6 @@ Cluster Specification Details:
 instance_pool_id = {instance_pool_id}
 node_type_id = {node_type_id}
 
-Note that node_type_id will only be used if an instance_pool_id is not set.  Bricksters on e2-demo-field-eng may use instance_pool_id = 0727-104344-hauls13-pool-uftxk0r6.  
-
 Number of times the Databricks workflow will be executed to simulate variability in patient record creation: number_of_job_runs = {number_of_job_runs}
 """
 )
@@ -112,6 +126,7 @@ post_job_result = dbutils.notebook.run(
     ,"inject_bad_data": inject_bad_data
     ,"min_records": min_records
     ,"max_records": max_records  
+    ,"serverless": serverless
   }
 )
 

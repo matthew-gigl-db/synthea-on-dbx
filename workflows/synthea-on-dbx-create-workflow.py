@@ -136,7 +136,7 @@ Note that node_type_id will only be used if an instance_pool_id is not set.
 
 # DBTITLE 1,Import Databricks Cluster Configuration Modules
 from databricks.sdk.service.jobs import JobCluster
-from databricks.sdk.service.compute import ClusterSpec, DataSecurityMode, RuntimeEngine
+from databricks.sdk.service.compute import ClusterSpec, DataSecurityMode, RuntimeEngine, AwsAttributes, AwsAvailability
 
 # COMMAND ----------
 
@@ -180,6 +180,9 @@ else:
         ,runtime_engine = RuntimeEngine("STANDARD")
         ,num_workers = 0
         ,node_type_id = node_type_id
+        ,aws_attributes = AwsAttributes(
+          availability = AwsAvailability("ON_DEMAND")
+        )
       )
     )
   else:
