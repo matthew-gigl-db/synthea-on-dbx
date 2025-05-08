@@ -1,0 +1,11 @@
+{
+  "name": "encounters",
+  "ddl": {
+    "specification": "encounter_id STRING,\n encounter_start_date TIMESTAMP,\n encounter_end_date TIMESTAMP,\n patient_id STRING,\n organization_id STRING,\n provider_id STRING,\n payer_id STRING,\n encounter_class STRING,\n code BIGINT,\n description STRING,\n base_encounter_cost DOUBLE,\n total_claim_cost DOUBLE,\n payer_coverage DOUBLE,\n reason_code BIGINT,\n reason_description STRING,\n _rescued_data STRING,\n CONSTRAINT encounter_patient_id_null EXPECT (patient_id IS NOT NULL))",
+    "clauses": "COMMENT 'Patient encounters.' \nTBLPROPERTIES (\n\t'quality' = 'bronze'\n\t,'delta.enableChangeDataFeed' = 'true'\n\t,'delta.enableDeletionVectors' = 'true'\n\t,'delta.enableRowTracking' = 'true'\n)\n--CLUSTER BY AUTO"
+  },
+  "select": "\n\t ID as encounter_id\n\t,START as encounter_start_date\n\t,STOP as encounter_end_date\n\t,PATIENT as patient_id\n\t,ORGANIZATION as organization_id\n\t,PROVIDER as provider_id\n\t,PAYER as payer_id\n\t,ENCOUNTERCLASS as encounter_class\n\t,CODE as code\n\t,DESCRIPTION as description \n\t,BASE_ENCOUNTER_COST as base_encounter_cost\n\t,TOTAL_CLAIM_COST as total_claim_cost\n\t,PAYER_COVERAGE as payer_coverage\n\t,REASONCODE as reason_code\n\t,REASONDESCRIPTION as reason_description\n\t,_rescued_data",
+  "keys": "ID",
+  "sequence_by": "file_metadata.file_modification_time",
+  "stored_as": "SCD TYPE 1"
+}
