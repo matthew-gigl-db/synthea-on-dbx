@@ -9,7 +9,7 @@ DECLARE OR REPLACE VARIABLE table_name STRING DEFAULT "encounters";
 SET VARIABLE catalog_name = :catalog_name; 
 SET VARIABLE schema_name = :schema_name;
 SET VARIABLE full_refresh = CASE WHEN :full_refresh = 'true' THEN true ELSE false END;  
-SET VARIABLE table_name = :table_name; 
+SET VARIABLE table_name = :table_name;  
 
 -- COMMAND ----------
 
