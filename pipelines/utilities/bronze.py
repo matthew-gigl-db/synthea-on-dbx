@@ -60,7 +60,7 @@ class Bronze:
       def stream_ingest_function():
           return (self.spark.readStream
             .format("cloudFiles")
-            .option("cloudFile.format", "text")
+            .option("cloudFiles.format", "text")
             .option("clusterByAuto", "true")
             .load(volume_path)
             .withColumnRenamed("_metadata", "file_metadata")
