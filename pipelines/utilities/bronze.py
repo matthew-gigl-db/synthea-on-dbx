@@ -57,7 +57,7 @@ class Bronze:
         temporary=False
       )
       # @dlt.expect(...)
-      def f"{self.resource_type}_bronze"():
+      def stream_ingest_function():
           return (spark.read
             .format("cloudFiles")
             .option("cloudFile.format", "text")
