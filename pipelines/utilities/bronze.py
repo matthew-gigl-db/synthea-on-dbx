@@ -58,7 +58,7 @@ class Bronze:
       )
       # @dlt.expect(...)
       def stream_ingest_function():
-          return (self.spark.read
+          return (self.spark.readStream
             .format("cloudFiles")
             .option("cloudFile.format", "text")
             .option("clusterByAuto", "true")
