@@ -4,7 +4,7 @@
 # Keeping 'data_sources' separate provides a clear overview of the data used
 # and allows for easy swapping of sources during development.
 
-from utilities import bronze.Bronze as Bronze
+from utilities.bronze import Bronze
 
 resource_types = ['patients', 'encounters', 'claims_transactions', 'conditions', 'medications']
 
