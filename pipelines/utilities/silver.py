@@ -1,6 +1,6 @@
 import dlt
-from spark.sql import Sparksession
-from spark.sql.functions import col
+from pyspark.sql import Sparksession
+from pyspark.sql.functions import col
 
 class Silver:
   def __init__(self, spark: SparkSession, table_definition: dict):

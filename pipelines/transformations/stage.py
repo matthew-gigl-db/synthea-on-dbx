@@ -1,7 +1,3 @@
-# This file defines a sample transformation.
-# Edit the sample below or add new transformations
-# using "+ Add" in the file browser.
-
 import os
 import json
 data_sources_dir = "../data_sources"
@@ -15,5 +11,8 @@ for json_file in json_files:
 from utilities.silver import Silver
 
 for table_definition in table_definitions:
-    Silver_pipeline = Silver(table_definition)
-    Silver_pipeline.transform_and_stage()
+    SilverPipeline = Silver(
+        spark = spark
+        ,table_definition = table_definition
+    )
+    SilverPipeline.transform_and_stage()
