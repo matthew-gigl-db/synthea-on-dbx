@@ -15,4 +15,5 @@ for table_definition in table_definitions:
         spark = spark
         ,table_definition = table_definition
     )
+    
     SilverPipeline.transform_and_stage()
