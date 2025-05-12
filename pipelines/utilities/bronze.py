@@ -71,7 +71,7 @@ class Bronze:
             .option("cloudFiles.format", "text")
             .option("clusterByAuto", "true")
             .load(volume_path)
-            .selectExpr("parse_json(_metadata) as file_metadata", "*")
+            .selectExpr("_metadata as file_metadata", "*")
           )
 
     def to_dict(self):
