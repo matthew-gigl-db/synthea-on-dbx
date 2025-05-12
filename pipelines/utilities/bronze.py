@@ -70,15 +70,14 @@ class Bronze:
             .format("cloudFiles")
             .option("cloudFiles.format", "csv")
             .option("clusterByAuto", "true")
-            .options(
-              "header", "true", 
-              "schema", "value STRING", 
-              "delimiter", "~", 
-              "multiLine", "false", 
-              "encoding", "UTF-8", 
-              "ignoreLeadingWhiteSpace", "true", 
-              "ignoreTrailingWhiteSpace", "true", 
-              "mode", "FAILFAST")
+            .option("header", "true")
+            .option("schema", "value STRING")
+            .option("delimiter", "~")
+            .option("multiLine", "false")
+            .option("encoding", "UTF-8")
+            .option("ignoreLeadingWhiteSpace", "true")
+            .option("ignoreTrailingWhiteSpace", "true")
+            .option("mode", "FAILFAST")
             .load(volume_path)
             .selectExpr("_metadata as file_metadata", "*")
           )
