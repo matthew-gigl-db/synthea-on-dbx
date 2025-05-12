@@ -27,7 +27,7 @@ class Silver:
     source = f"{self.table_definition['name']}_bronze"
     name = f"{self.table_definition['name']}_stage"
     comment = f"Staged {self.table_definition['name']} data."
-    table_properties = self.table_definition['clauses']['table_properties']
+    table_properties = self.table_definition['ddl']['clauses']['table_properties']
     schema = """file_metadata STRUCT < file_path: STRING, 
       file_name: STRING,
       file_size: BIGINT,
