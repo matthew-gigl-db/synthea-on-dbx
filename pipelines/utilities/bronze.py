@@ -63,7 +63,7 @@ class Bronze:
             .option("cloudFiles.format", "text")
             .option("clusterByAuto", "true")
             .load(volume_path)
-            .withColumnRenamed("_metadata", "file_metadata")
+            .withColumn("file_metadata", "_metadata")
           )
 
     def to_dict(self):
