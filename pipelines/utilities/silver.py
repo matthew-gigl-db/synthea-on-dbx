@@ -1,5 +1,5 @@
 import dlt
-from pyspark.sql import Sparksession
+from pyspark.sql import SparkSession
 from pyspark.sql.functions import col
 
 class Silver:
