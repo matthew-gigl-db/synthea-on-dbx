@@ -4,8 +4,8 @@ from spark.sql.functions import col
 
 class Silver:
   def __init__(self, spark: SparkSession, table_definition: dict):
-    self.spark = spark
-    ,self.table_definition = table_definition
+    self.spark = spark,
+    self.table_definition = table_definition
     """
     The Silver class is responsible for transforming data from the bronze table to the silver table.
     
