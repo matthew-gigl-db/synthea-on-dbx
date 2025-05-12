@@ -19,6 +19,12 @@ class Bronze:
         schema (str): The schema name within the catalog.
         volume_sub_path (str): The sub-path within the volume where the data is located.
         resource_type (str): The type of the data resource.
+
+    Methods:
+        __repr__(): Returns a string representation of the Bronze object.
+        stream_ingest(): Defines a Delta Live Table for streaming ingestion of CSV files.
+        to_dict(): Converts the Bronze object attributes to a dictionary.
+        from_dict(cls, data): Creates a Bronze object from a dictionary.
     """
 
     def __repr__(self):
