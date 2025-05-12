@@ -1,6 +1,7 @@
 import dlt
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col
+from pyspark.sql.functions import col, row_number
+from pyspark.sql.window import Window
 
 class Bronze:
     def __init__(self, spark: SparkSession, catalog: str, schema: str, volume: str, volume_sub_path: str, resource_type: str):
@@ -68,20 +69,10 @@ class Bronze:
       def stream_ingest_function():
           return (self.spark.readStream
             .format("cloudFiles")
-            .option("cloudFiles.format", "csv")
-            .option("clusterByAuto", "true")
-            .option("header", "false")
-            .option("inferSchema", "false")
-            .option("skipRows", 1)
-            .option("schema", "value STRING")
-            .option("delimiter", "~")
-            .option("multiLine", "false")
-            .option("encoding", "UTF-8")
-            .option("ignoreLeadingWhiteSpace", "true")
-            .option("ignoreTrailingWhiteSpace", "true")
-            .option("mode", "FAILFAST")
+            .option("cloudFiles.format", "text")
             .load(volume_path)
             .selectExpr("_metadata as file_metadata", "*")
+            .filter(~col("value").startswith("Id,") & ~col("value").startswith("START,"))
           )
 
     def to_dict(self):
