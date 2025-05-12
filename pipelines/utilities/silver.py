@@ -53,7 +53,6 @@ class Silver:
     def transform_and_stage_function():
         return (self.spark.readStream
           .table(source)
-          .option("clusterByAuto", "true")
           .withColumn("data", from_csv(col("value"), schema))
           .select(file_metadata, ingest_time, "data.*")
         )
