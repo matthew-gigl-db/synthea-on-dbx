@@ -33,8 +33,8 @@ class Silver:
       file_size: BIGINT,
       file_block_start: BIGINT,
       file_block_length: BIGINT,
-      file_modification_time: TIMESTAMP > NOT NULL COMMENT 'Metadata about the file ingested.'
-      ,ingest_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() COMMENT 'The date timestamp the file was ingested.',
+      file_modification_time: TIMESTAMP > NOT NULL COMMENT 'Metadata of the file ingested.'
+      ,ingest_time TIMESTAMP NOT NULL COMMENT 'The date timestamp when the file was ingested.',
       """ + self.table_definition['ddl']['schema']
 
     @dlt.table(
@@ -54,7 +54,7 @@ class Silver:
         return (self.spark.readStream
           .table(source)
           .withColumn("data", from_csv(col("value"), schema))
-          .select("file_metadata", "ingest_time", "data.*")
+          .select("data.*")
         )
 
   def to_dict(self):

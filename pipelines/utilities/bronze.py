@@ -32,12 +32,7 @@ class Bronze:
       
     def stream_ingest(self):
       schema_definition = f"""
-        file_metadata STRUCT < file_path: STRING, 
-        file_name: STRING,
-        file_size: BIGINT,
-        file_block_start: BIGINT,
-        file_block_length: BIGINT,
-        file_modification_time: TIMESTAMP > NOT NULL COMMENT 'Metadata about the file ingested.'
+        file_metadata VARIANT NOT NULL COMMENT 'Metadata about the file ingested.'
         ,ingest_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() COMMENT 'The date timestamp the file was ingested.'
         ,value STRING COMMENT 'The raw CSV file contents.'
       """
@@ -71,7 +66,7 @@ class Bronze:
             .option("cloudFiles.format", "text")
             .option("clusterByAuto", "true")
             .load(volume_path)
-            .withColumn("file_metadata", col("_metadata"))
+            .selectExpr("parse_json(_metadata) as file_metadata", "*")
           )
 
     def to_dict(self):
