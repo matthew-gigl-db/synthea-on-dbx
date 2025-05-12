@@ -28,14 +28,15 @@ class Silver:
     name = f"{self.table_definition['name']}_stage"
     comment = f"Staged {self.table_definition['name']} data."
     table_properties = self.table_definition['ddl']['clauses']['table_properties']
-    schema = """file_metadata STRUCT < file_path: STRING, 
+    file_schema = self.table_definition['ddl']['schema']
+    table_schema = """file_metadata STRUCT < file_path: STRING, 
       file_name: STRING,
       file_size: BIGINT,
       file_block_start: BIGINT,
       file_block_length: BIGINT,
       file_modification_time: TIMESTAMP > NOT NULL COMMENT 'Metadata of the file ingested.'
       ,ingest_time TIMESTAMP NOT NULL COMMENT 'The date timestamp when the file was ingested.',
-      """ + self.table_definition['ddl']['schema']
+      """ + file_schema
 
     @dlt.table(
       name=name
@@ -45,7 +46,7 @@ class Silver:
       # path="<storage-location-path>",
       # partition_cols=["<partition-column>", "<partition-column>"],
       # cluster_by = ["colname_1", "colname_2"],
-      ,schema=schema
+      ,schema=table_schema
       # row_filter = "row-filter-clause",
       ,temporary=True
     )
@@ -53,7 +54,7 @@ class Silver:
     def transform_and_stage_function():
         return (self.spark.readStream
           .table(source)
-          .withColumn("data", from_csv(col("value"), schema))
+          .withColumn("data", from_csv(col("value"), file_schema))
           .select("data.*")
         )
 
