@@ -1,6 +1,6 @@
 import dlt
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col
+from pyspark.sql.functions import col, from_csv
 
 class Silver:
   def __init__(self, spark: SparkSession, table_definition: dict):
@@ -54,7 +54,7 @@ class Silver:
         return (self.spark.readStream
           .table(source)
           .withColumn("data", from_csv(col("value"), schema))
-          .select(file_metadata, ingest_time, "data.*")
+          .select("file_metadata", "ingest_time", "data.*")
         )
 
   def to_dict(self):
