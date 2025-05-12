@@ -37,8 +37,9 @@ class Bronze:
         file_size: BIGINT,
         file_block_start: BIGINT,
         file_block_length: BIGINT,
-        file_modification_time: TIMESTAMP > NOT NULL COMMENT 'Metadata about the file ingested.',ingest_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() COMMENT 'The date timestamp the file was ingested.',
-        value STRING COMMENT 'The raw CSV file contents.'
+        file_modification_time: TIMESTAMP > NOT NULL COMMENT 'Metadata about the file ingested.'
+        ,ingest_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() COMMENT 'The date timestamp the file was ingested.'
+        ,value STRING COMMENT 'The raw CSV file contents.'
       """
 
       if self.volume_sub_path == None:
