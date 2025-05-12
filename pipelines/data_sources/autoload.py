@@ -6,7 +6,8 @@
 
 from utilities.bronze import Bronze
 
-resource_types = ['patients', 'encounters', 'claims_transactions', 'conditions', 'medications']
+resource_types = spark.conf.get("resource_types").split(',')
+resource_types = [resource_type.strip() for resource_type in resource_types]
 
 for resource_type in resource_types:
     Bronze_pipeline = Bronze(

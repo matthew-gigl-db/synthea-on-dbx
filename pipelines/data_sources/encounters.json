@@ -1,0 +1,32 @@
+{
+  "name": "encounters",
+  "ddl": {
+    "schema": "encounter_id STRING NOT NULL PRIMARY KEY COMMENT 'Primary Key. Unique Identifier of the encounter.',\n encounter_start_date TIMESTAMP NOT NULL COMMENT 'The date and time the encounter started.',\n encounter_end_date TIMESTAMP COMMENT 'The date and time the encounter concluded.',\n patient_id STRING COMMENT 'Foreign key to the Patient.',\n organization_id STRING COMMENT 'Foreign key to the Organization.',\n provider_id STRING COMMENT 'Foreign key to the Provider.',\n payer_id STRING COMMENT 'Foreign key to the Payer.',\n encounter_class STRING COMMENT 'The class of the encounter, such as ambulatory, emergency, inpatient, wellness, or urgentcare',\n encounter_code STRING 'Encounter code from SNOMED-CT',\n description STRING COMMENT 'Description of the type of encounter.',\n base_encounter_cost NUMERIC COMMENT 'The base cost of the encounter, not including any line item costs related to medications, immunizations, procedures, or other services.',\n total_claim_cost DOUBLE COMMENT 'The total cost of the encounter, including all line items.',\n payer_coverage DOUBLE COMMENT 'The amount of cost covered by the Payer.',\n reason_code STRING COMMENT 'Diagnosis code from SNOMED-CT, only if this encounter targeted a specific condition.',\n reason_description STRING COMMENT 'Description of the reason code.',\n CONSTRAINT encounter_patient_id_null EXPECT (patient_id IS NOT NULL)",
+    "clauses": {
+      "comment": "Patient encounters."
+      ,"table_properties": {
+          "quality" : "bronze"
+          ,"delta.enableChangeDataFeed" : "true"
+          ,"delta.enableDeletionVectors" : "true"
+          ,"delta.enableRowTracking" : "true"
+      }
+      ,"clusterByAuto": "true"
+    }
+  },
+  "expectations": {
+    "warn": [
+      {"description": "total_claim_cost_zero", "constraint": "total_claim_cost = 0"}
+    ]
+    ,"drop": [
+      {"description": "encounter_patient_id_null", "constraint": "patient_id IS NOT NULL"}
+      ,{"description": "encounter_id_null", "constraint": "encounter_id IS NOT NULL"}
+    ]
+    ,"fail": []
+    ,"all_warn": []
+    ,"all_drop": []
+    ,"all_fail": []
+  },
+  "pkeys": "encounter_id",
+  "sequence_by": "file_metadata.file_modification_time",
+  "stored_as": "SCD TYPE 1"
+}

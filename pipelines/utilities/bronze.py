@@ -58,7 +58,7 @@ class Bronze:
         },
         # path="<storage-location-path>",
         # partition_cols=["<partition-column>", "<partition-column>"],
-        # cluster_by = ["colname_1", "colname_2"],
+        cluster_by = ["file_metadata.file_path"],
         schema=schema_definition,
         # row_filter = "row-filter-clause",
         temporary=False
