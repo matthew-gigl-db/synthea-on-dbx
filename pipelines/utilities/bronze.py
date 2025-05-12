@@ -1,5 +1,6 @@
 import dlt
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
 
 class Bronze:
     def __init__(self, spark: SparkSession, catalog: str, schema: str, volume: str, volume_sub_path: str, resource_type: str):
@@ -63,7 +64,7 @@ class Bronze:
             .option("cloudFiles.format", "text")
             .option("clusterByAuto", "true")
             .load(volume_path)
-            .withColumn("file_metadata", "_metadata")
+            .withColumn("file_metadata", col("_metadata"))
           )
 
     def to_dict(self):
