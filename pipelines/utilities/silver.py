@@ -55,7 +55,7 @@ class Silver:
         return (self.spark.readStream
           .table(source)
           .withColumn("data", from_csv(col("value"), file_schema))
-          .select("data.*")
+          .select("file_metadata", "ingest_time", "data.*")
         )
 
   def to_dict(self):
