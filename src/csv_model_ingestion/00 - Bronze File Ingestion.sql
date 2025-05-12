@@ -1,4 +1,5 @@
 -- Databricks notebook source
+-- DBTITLE 1,Declare Variables for Input Parameters
 DECLARE OR REPLACE VARIABLE catalog_name STRING DEFAULT "main";
 DECLARE OR REPLACE VARIABLE schema_name STRING DEFAULT "synthea";
 DECLARE OR REPLACE VARIABLE full_refresh BOOLEAN DEFAULT false;
@@ -6,25 +7,30 @@ DECLARE OR REPLACE VARIABLE table_name STRING DEFAULT "encounters";
 
 -- COMMAND ----------
 
+-- DBTITLE 1,Set Variables to Input Parameter Values
 SET VARIABLE catalog_name = :catalog_name; 
 SET VARIABLE schema_name = :schema_name;
 SET VARIABLE full_refresh = CASE WHEN :full_refresh = 'true' THEN true ELSE false END;  
-SET VARIABLE table_name = :table_name; 
+SET VARIABLE table_name = :table_name;  
 
 -- COMMAND ----------
 
+-- DBTITLE 1,Show Variable Assignments
 select catalog_name, schema_name, full_refresh, table_name;
 
 -- COMMAND ----------
 
+-- DBTITLE 1,Use Catalog and Schema
 USE IDENTIFIER(catalog_name || "." || schema_name);
 
 -- COMMAND ----------
 
+-- DBTITLE 1,Show Current Catalog and Schema
 SELECT current_catalog(), current_schema();
 
 -- COMMAND ----------
 
+-- DBTITLE 1,Set Landing Volume Path
 DECLARE OR REPLACE VARIABLE landing_volume_path STRING DEFAULT "/Volumes/" || catalog_name || "/" || schema_name || "/landing/";
 
 SELECT landing_volume_path;
@@ -67,12 +73,14 @@ SELECT landing_volume_path;
 
 -- COMMAND ----------
 
+-- DBTITLE 1,Set Variable for Bronze Table Name
 DECLARE OR REPLACE VARIABLE bronze_table_name STRING DEFAULT table_name || "_bronze"; 
 
 SELECT table_name, bronze_table_name;
 
 -- COMMAND ----------
 
+-- DBTITLE 1,Set Full Refresh Statement Based on Input Parameters
 DECLARE OR REPLACE VARIABLE full_refresh_bronze_stmnt STRING; 
 
 SET VARIABLE full_refresh_bronze_stmnt = CASE 
@@ -84,26 +92,29 @@ SELECT full_refresh_bronze_stmnt;
 
 -- COMMAND ----------
 
+-- DBTITLE 1,Execute Full Refresh Statement
 EXECUTE IMMEDIATE full_refresh_bronze_stmnt;
 
 -- COMMAND ----------
 
-DECLARE OR REPLACE VARIABLE bronze_table_specification STRING;
+-- DBTITLE 1,Set Bronze Table Specifications
+-- DECLARE OR REPLACE VARIABLE bronze_table_specification STRING;
 
-SET VARIABLE bronze_table_specification = "
-(
-  file_metadata STRUCT < file_path: STRING,
-  file_name: STRING,
-  file_size: BIGINT,
-  file_block_start: BIGINT,
-  file_block_length: BIGINT,
-  file_modification_time: TIMESTAMP > NOT NULL COMMENT 'Metadata about the file ingested.',
-  ingest_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() COMMENT 'The date timestamp the file was ingested.',
-  value STRING COMMENT 'The raw CSV file contents.'
-)"
+-- SET VARIABLE bronze_table_specification = "
+-- (
+--   file_metadata STRUCT < file_path: STRING,
+--   file_name: STRING,
+--   file_size: BIGINT,
+--   file_block_start: BIGINT,
+--   file_block_length: BIGINT,
+--   file_modification_time: TIMESTAMP > NOT NULL COMMENT 'Metadata about the file ingested.',
+--   ingest_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() COMMENT 'The date timestamp the file was ingested.',
+--   value STRING COMMENT 'The raw CSV file contents.'
+-- )"
 
 -- COMMAND ----------
 
+-- DBTITLE 1,Set Bronze Table Clauses
 DECLARE OR REPLACE VARIABLE bronze_table_clauses STRING; 
 
 SET VARIABLE bronze_table_clauses = "
@@ -118,6 +129,7 @@ TBLPROPERTIES (
 
 -- COMMAND ----------
 
+-- DBTITLE 1,Set Create or Refresh Streaming Table Statement
 DECLARE OR REPLACE VARIABLE crst_bronze_stmnt STRING; 
 
 SET VARIABLE crst_bronze_stmnt = "CREATE OR REFRESH STREAMING TABLE " || bronze_table_name ||  
@@ -144,6 +156,7 @@ SELECT crst_bronze_stmnt;
 
 -- COMMAND ----------
 
+-- DBTITLE 1,Execute CRST Statement
 EXECUTE IMMEDIATE crst_bronze_stmnt;
 
 -- COMMAND ----------
