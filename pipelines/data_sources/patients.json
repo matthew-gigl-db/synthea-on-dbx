@@ -1,0 +1,29 @@
+{
+  "name": "patients",
+  "ddl": {
+    "schema": "patient_id STRING PRIMARY KEY NOT NULL COMMENT 'Primary Key. Unique Identifier of the patient.', birthdate DATE COMMENT 'The date the patient was born.', deathdate DATE COMMENT 'The date the patient died.', ssn STRING COMMENT 'Patient Social Security identifier.', drivers STRING COMMENT 'Patient Drivers License identifier.', passport STRING 'Patient Passport identifier.', prefix STRING COMMENT 'Name prefix, such as Mr., Mrs., Dr., etc.', first STRING COMMENT 'First name of the patient', middle STRING 'Middle name of the patient', last STRING COMMENT 'Last name of the patient', suffix STRING COMMENT 'Name suffix, such as PhD, MD, JD, etc.', maiden STRING COMMENT 'Maiden name of the patient.', marital STRING COMMENT 'Marital Status. M is married, S is single. Currently no support for divorce (D) or widowing (W)', race STRING COMMENT 'Description of the patient primary race.', ethnicity STRING COMMENT 'Description of the patient primary ethnicity', gender STRING COMMENT 'Gender. M is male, F is female.', birthplace STRING COMMENT 'Name of the town where the patient was born.', address STRING COMMENT 'Street address without commas or newlines.', city STRING COMMENT 'Address City', state STRING COMMENT 'Address State', county STRING COMMENT 'Address County', fips_county_code STRING COMMENT 'Address FIPS County Code', zip STRING COMMENT 'Address Zip Code', lat NUMERIC COMMENT 'Address latitude.', lon NUMERIC COMMENT 'Address longitude', healthcare_expenses NUMERIC COMMENT 'The total lifetime cost of healthcare to the patient (i.e. what the patient paid).', healthcare_coverage NUMERIC COMMENT 'The total lifetime cost of healthcare services that were covered by Payers (i.e. what the insurance company paid).', income NUMERIC COMMENT 'Annual income for the Patient'",
+    "clauses": {
+      "comment": "Patient detials."
+      ,"table_properties": {
+          "quality" : "bronze"
+          ,"delta.enableChangeDataFeed" : "true"
+          ,"delta.enableDeletionVectors" : "true"
+          ,"delta.enableRowTracking" : "true"
+      }
+      ,"clusterByAuto": "true"
+    }
+  },
+  "expectations": {
+    "warn": []
+    ,"drop": [
+      {"description": "patient_id_null", "constraint": "patient_id IS NOT NULL"}
+    ]
+    ,"fail": []
+    ,"all_warn": []
+    ,"all_drop": []
+    ,"all_fail": []
+  },
+  "pkeys": "patient_id",
+  "sequence_by": "file_metadata.file_modification_time",
+  "stored_as": "SCD TYPE 1"
+}
