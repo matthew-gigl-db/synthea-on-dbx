@@ -58,6 +58,50 @@ class Silver:
           .select("file_metadata", "ingest_time", "data.*")
         )
 
+  def apply_changes(sefl):
+    source = f"{self.table_definition['name']}_stage"
+    name = f"{self.table_definition['name']}"
+    comment = f"Parsed {self.table_definition['name']} data."
+    table_properties = self.table_definition['ddl']['clauses']['table_properties']
+    file_schema = self.table_definition['ddl']['schema']
+    table_schema = file_schema
+    expect_all = 
+
+    dlt.create_streaming_table(
+      name = name,
+      comment = comment,
+      # spark_conf={"<key>" : "<value", "<key" : "<value>"},
+      table_properties=table_properties,
+      # path="<storage-location-path>",
+      # partition_cols=["<partition-column>", "<partition-column>"],
+      # cluster_by = ["<clustering-column>", "<clustering-column>"],
+      schema=table_schema,
+      expect_all = {"<key>" : "<value", "<key" : "<value>"},
+      expect_all_or_drop = {"<key>" : "<value", "<key" : "<value>"},
+      expect_all_or_fail = {"<key>" : "<value", "<key" : "<value>"},
+      # row_filter = "row-filter-clause"
+    )
+
+    @dlt.table(
+      name=name
+      ,comment=comment
+      # spark_conf={"<key>" : "<value>", "<key>" : "<value>"},
+      ,table_properties=table_properties
+      # path="<storage-location-path>",
+      # partition_cols=["<partition-column>", "<partition-column>"],
+      # cluster_by = ["colname_1", "colname_2"],
+      ,schema=table_schema
+      # row_filter = "row-filter-clause",
+      ,temporary=True
+    )
+    # @dlt.expect(...)
+    def transform_and_stage_function():
+        return (self.spark.readStream
+          .table(source)
+          .withColumn("data", from_csv(col("value"), file_schema))
+          .select("file_metadata", "ingest_time", "data.*")
+        )
+
   def to_dict(self):
       return {"spark": self.spark, "table_definition": self.table_definition}
 
