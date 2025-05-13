@@ -1,0 +1,29 @@
+{
+  "name": "medications",
+  "ddl": {
+    "schema": "medication_start_date TIMESTAMP COMMENT 'The date and time the medication was prescribed.', medication_stop_date TIMESTAMP COMMENT 'The date and time the prescription ended, if applicable.', patient_id STRING COMMENT 'Foriegn key to the patient', payer_id STRING COMMENT 'Foriegn key to the payer.', encounter_id STRING COMMENT 'Foriegn key to the encounter.', medication_code STRING COMMENT 'Medication code from RxNorm', medication_code_description STRING COMMENT 'Description of the medication', base_cost NUMERIC COMMENT 'The line item cost of the medication', payer_coverage NUMERIC COMMENT 'The amount covered or reimbursed by the payer', dispenses NUMERIC COMMENT 'The number of times the prescription was filled.', total_cost NUMERIC COMMENT 'The total cost of the prescription, including all dispenses.', reason_code STRING COMMENT 'Diagnosis code from SNOMED-CT specifying why this medication was prescribed', reason_description STRING COMMENT 'Description of the reason code.'",
+    "clauses": {
+      "comment": "Medications presribed to the patients during encounters."
+      ,"table_properties": {
+          "quality" : "bronze"
+          ,"delta.enableChangeDataFeed" : "true"
+          ,"delta.enableDeletionVectors" : "true"
+          ,"delta.enableRowTracking" : "true"
+      }
+      ,"clusterByAuto": "true"
+    }
+  },
+  "expectations": {
+    "warn": [
+      {"description": "medication_total_cost_negative", "constraint": "total_cost >= 0"}
+    ]
+    ,"drop": []
+    ,"fail": []
+    ,"all_warn": []
+    ,"all_drop": []
+    ,"all_fail": []
+  },
+  "pkeys": ["start", "patient_id", "payer_id", "encounter_id", "medication_code"],
+  "sequence_by": "file_metadata.file_modification_time",
+  "stored_as": "SCD TYPE 1"
+}

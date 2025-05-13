@@ -1,9 +1,9 @@
 {
   "name": "conditions",
   "ddl": {
-    "schema": "condition_start_date DATE COMMENT 'The date the condition was diagnosed.', condition_stop_date DATE COMMENT 'The date the condition resolved, if applicable.', patient_id STRING COMMENT 'Foriegn key to the patients table.', encounter_id STRING COMMENT 'Foriegn key to the encounter when the condition was diagnosed.', system STRING COMMENT 'Specifies the code system, typically SNOMED', condition_code STRING COMMENT 'Diagnosis code from SNOMED-CT' description STRING 'Description of the condition'",
+    "schema": "condition_start_date DATE COMMENT 'The date the condition was diagnosed.', condition_stop_date DATE COMMENT 'The date the condition resolved, if applicable.', patient_id STRING COMMENT 'Foriegn key to the patients table.', encounter_id STRING COMMENT 'Foriegn key to the encounter when the condition was diagnosed.', system STRING COMMENT 'Specifies the code system, typically SNOMED', condition_code STRING COMMENT 'Diagnosis code from SNOMED-CT', code_description STRING COMMENT 'Description of the condition'",
     "clauses": {
-      "comment": "Claims transaction detials."
+      "comment": "Conditions diagnosed to the patients."
       ,"table_properties": {
           "quality" : "bronze"
           ,"delta.enableChangeDataFeed" : "true"
