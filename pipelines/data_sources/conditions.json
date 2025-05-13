@@ -1,0 +1,30 @@
+{
+  "name": "conditions",
+  "ddl": {
+    "schema": "condition_start_date DATE COMMENT 'The date the condition was diagnosed.', condition_stop_date DATE COMMENT 'The date the condition resolved, if applicable.', patient_id STRING COMMENT 'Foriegn key to the patients table.', encounter_id STRING COMMENT 'Foriegn key to the encounter when the condition was diagnosed.', system STRING COMMENT 'Specifies the code system, typically SNOMED', condition_code STRING COMMENT 'Diagnosis code from SNOMED-CT' description STRING 'Description of the condition'",
+    "clauses": {
+      "comment": "Claims transaction detials."
+      ,"table_properties": {
+          "quality" : "bronze"
+          ,"delta.enableChangeDataFeed" : "true"
+          ,"delta.enableDeletionVectors" : "true"
+          ,"delta.enableRowTracking" : "true"
+      }
+      ,"clusterByAuto": "true"
+    }
+  },
+  "expectations": {
+    "warn": []
+    ,"drop": [
+      {"description": "condition_patient_id_null", "constraint": "patient_id IS NOT NULL"}
+      ,{"description": "condition_encounter_id_null", "constraint": "encounter_id IS NOT NULL"}
+    ]
+    ,"fail": []
+    ,"all_warn": []
+    ,"all_drop": []
+    ,"all_fail": []
+  },
+  "pkeys": ["start", "patient_id", "encounter_id", "system", "code"],
+  "sequence_by": "file_metadata.file_modification_time",
+  "stored_as": "SCD TYPE 1"
+}

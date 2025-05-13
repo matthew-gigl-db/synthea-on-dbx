@@ -25,7 +25,7 @@
     ,"all_drop": []
     ,"all_fail": []
   },
-  "pkeys": "claims_transaction_id",
+  "pkeys": ["claims_transaction_id"],
   "sequence_by": "file_metadata.file_modification_time",
   "stored_as": "SCD TYPE 1"
 }
