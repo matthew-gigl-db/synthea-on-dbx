@@ -1,5 +1,5 @@
 -- this is a comment 
-CREATE OR REFRESH STREAMING TABLE encounters_dlt (
+CREATE OR REFRESH STREAMING TABLE encounters (
  CONSTRAINT encounter_patient_id_null EXPECT (PATIENT IS NOT NULL)
 )
 COMMENT 'Patient encounters.' 
@@ -10,9 +10,9 @@ TBLPROPERTIES (
 	,'delta.enableRowTracking' = 'true'
 );
 
-APPLY CHANGES INTO encounters_dlt
-FROM STREAM(encounters_bronze)
-KEYS (ID)
+APPLY CHANGES INTO encounters
+FROM STREAM(encounters_stage)
+KEYS (encounter_id)
 SEQUENCE BY file_metadata.file_modification_time
-COLUMNS * EXCEPT (file_metadata)
+COLUMNS * EXCEPT (file_metadata, ingest_time)
 STORED AS SCD TYPE 1;
