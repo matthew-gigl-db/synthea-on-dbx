@@ -1,0 +1,30 @@
+resources:
+  pipelines:
+    pipeline_synthea_data_model:
+      name: Synthea CSV Data Model
+      configuration:
+        catalog_use: mgiglia
+        schema_use: synthea_pipeline
+        volume_use: landing
+        volume_sub_path_use: ""
+        resource_types: patients, encounters, claims_transactions, conditions,
+          medications, claims, devices, payers, imaging_studies
+      libraries:
+        - glob:
+            include: /Workspace/Users/matthew.giglia@databricks.com/synthea-on-dbx/pipelines/data_sources/**
+        - glob:
+            include: /Workspace/Users/matthew.giglia@databricks.com/synthea-on-dbx/pipelines/transformations/stage.py
+        - glob:
+            include: /Workspace/Users/matthew.giglia@databricks.com/synthea-on-dbx/pipelines/transformations/encounters.sql
+      schema: synthea_pipeline
+      development: true
+      photon: true
+      channel: PREVIEW
+      catalog: mgiglia
+      serverless: true
+      data_sampling: false
+      event_log:
+        name: event_log_pipeline_6104268e_0813_44d8_9583_723c8197d899
+        schema: synthea_pipeline
+        catalog: mgiglia
+      root_path: /Workspace/Users/matthew.giglia@databricks.com/synthea-on-dbx/pipelines
