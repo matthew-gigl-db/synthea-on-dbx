@@ -1,5 +1,6 @@
 # The 'data_sources' folder contains definitions for all data sources
 # used by the pipeline.
+# full array patients, encounters, claims_transactions, conditions, medications, claims, devices, payers, imaging_studies
 
 # Keeping 'data_sources' separate provides a clear overview of the data used
 # and allows for easy swapping of sources during development.
