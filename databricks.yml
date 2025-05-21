@@ -17,6 +17,16 @@ targets:
     workspace:
       host: https://e2-demo-field-eng.cloud.databricks.com
 
+  msk_demo:
+    # The default target uses 'mode: development' to create a development copy.
+    # - Deployed resources get prefixed with '[dev my_user_name]'
+    # - Any job schedules and triggers are paused by default.
+    # See also https://docs.databricks.com/dev-tools/bundles/deployment-modes.html.
+    mode: development
+    default: false
+    workspace:
+      host: https://dbc-794147fc-15cd.cloud.databricks.com/
+
   dev_azure:
     # The default target uses 'mode: development' to create a development copy.
     # - Deployed resources get prefixed with '[dev my_user_name]'

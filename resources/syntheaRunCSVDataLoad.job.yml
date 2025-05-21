@@ -15,9 +15,9 @@ resources:
       tasks:
         - task_key: refresh_bronze_pipeline
           pipeline_task:
-            pipeline_id: ${resources.pipelines.dlt_dropbox_bronze.id}
+            pipeline_id: ${resources.pipelines..id}
         - task_key: refresh_silver_pipeline
           pipeline_task:
-            pipeline_id: ${resources.pipelines.dlt_dropbox_silver.id}
+            pipeline_id: ${resources.pipelines.pipeline_synthea_data_model.id}
           depends_on:
             - task_key: refresh_bronze_pipeline

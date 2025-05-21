@@ -11,11 +11,11 @@ resources:
           medications, claims, devices, payers, imaging_studies
       libraries:
         - glob:
-            include: /Workspace/Users/matthew.giglia@databricks.com/synthea-on-dbx/pipelines/data_sources/**
+            include: ../pipelines/data_sources/**
         - glob:
-            include: /Workspace/Users/matthew.giglia@databricks.com/synthea-on-dbx/pipelines/transformations/stage.py
+            include: ../pipelines/transformations/stage.py
         - glob:
-            include: /Workspace/Users/matthew.giglia@databricks.com/synthea-on-dbx/pipelines/transformations/encounters.sql
+            include: ../pipelines/transformations/encounters.sql
       schema: synthea_pipeline
       development: true
       photon: true
@@ -24,7 +24,7 @@ resources:
       serverless: true
       data_sampling: false
       event_log:
-        name: event_log_pipeline_6104268e_0813_44d8_9583_723c8197d899
+        name: event_log_pipeline_${resources.pipelines.pipeline_synthea_data_model.id}
         schema: synthea_pipeline
         catalog: mgiglia
       root_path: /Workspace/Users/matthew.giglia@databricks.com/synthea-on-dbx/pipelines
