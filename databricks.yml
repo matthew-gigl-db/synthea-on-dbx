@@ -29,7 +29,7 @@ targets:
     variables:
       pipeline_catalog_use: fhir_workshop
       pipeline_schema_use: pipeline
-      pipeline_full_fresh: false 
+      pipeline_full_refresh: false 
 
   dev_azure:
     # The default target uses 'mode: development' to create a development copy.
