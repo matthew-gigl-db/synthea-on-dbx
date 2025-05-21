@@ -1,7 +1,7 @@
 resources:
   pipelines:
-    pipeline_synthea_data_model:
-      name: Synthea CSV Data Model
+    pipeline_synthea_csv:
+      name: Synthea CSV Data Model Bronze and Silver Pipeline
       configuration:
         catalog_use: mgiglia
         schema_use: synthea_pipeline
@@ -24,7 +24,7 @@ resources:
       serverless: true
       data_sampling: false
       event_log:
-        name: event_log_pipeline_${resources.pipelines.pipeline_synthea_data_model.id}
+        name: event_log_pipeline_${resources.pipelines.pipeline_synthea_csv.id}
         schema: synthea_pipeline
         catalog: mgiglia
       root_path: /Workspace/Users/matthew.giglia@databricks.com/synthea-on-dbx/pipelines

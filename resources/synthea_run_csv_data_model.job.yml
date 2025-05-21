@@ -1,0 +1,18 @@
+resources:
+  jobs:
+    synthea_run_csv_data_model:
+      name: Synthea CSV Data Model
+
+      schedule:
+        # Run every day at 8:37 AM
+        quartz_cron_expression: '44 37 8 * * ?'
+        timezone_id: Europe/Amsterdam
+
+      email_notifications:
+        on_failure:
+          - matthew.giglia@databricks.com
+
+      tasks:
+        - task_key: Bronze and Silver Pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.pipeline_synthea_data_model.id}
