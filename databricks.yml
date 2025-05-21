@@ -26,6 +26,10 @@ targets:
     default: false
     workspace:
       host: https://dbc-794147fc-15cd.cloud.databricks.com/
+    variables:
+      pipeline_catalog_use: fhir_workshop
+      pipeline_schema_use: pipeline
+      pipeline_full_fresh: false 
 
   dev_azure:
     # The default target uses 'mode: development' to create a development copy.
@@ -57,6 +61,15 @@ variables:
     default: synthea
     description: The schema that will be created and used as part of the FHIR Workshop, or other demonstration code.  This schema will contain tables, volumes, SQL UDFs, and machine learning models. 
   full_refresh:
+    default: false
+    description: Boolean (evaluated as string when inputted as a parameter in a dbutils text widget) to perform a full refresh on all streaming tables. 
+  pipeline_catalog_use:
+    default: main
+    description: The Unity Catalog catalog that the schemas will be created in.  
+  pipeline_schema_use: 
+    default: synthea
+    description: The schema that will be created and used as part of the FHIR Workshop, or other demonstration code.  This schema will contain tables, volumes, SQL UDFs, and machine learning models. 
+  pipeline_full_refresh:
     default: false
     description: Boolean (evaluated as string when inputted as a parameter in a dbutils text widget) to perform a full refresh on all streaming tables. 
   workflow_trigger_pause_status:

@@ -3,8 +3,8 @@ resources:
     pipeline_synthea_csv:
       name: Synthea CSV Data Model Bronze and Silver Pipeline
       configuration:
-        catalog_use: mgiglia
-        schema_use: synthea_pipeline
+        catalog_use: ${var.pipeline_catalog_use}
+        schema_use: ${var.pipeline_schema_use}
         volume_use: landing
         volume_sub_path_use: ""
         resource_types: patients, encounters, claims_transactions, conditions,
@@ -16,15 +16,15 @@ resources:
             include: ../pipelines/transformations/stage.py
         - glob:
             include: ../pipelines/transformations/encounters.sql
-      schema: synthea_pipeline
+      schema: ${var.pipeline_schema_use}
       development: true
       photon: true
       channel: PREVIEW
-      catalog: mgiglia
+      catalog: ${var.pipeline_catalog_use}
       serverless: true
       data_sampling: false
       event_log:
-        name: event_log_pipeline_${resources.pipelines.pipeline_synthea_csv.id}
-        schema: synthea_pipeline
-        catalog: mgiglia
+        name: event_log_pipeline_bronze_and_silver_synthea_csv
+        schema: ${var.pipeline_schema_use}
+        catalog: ${var.pipeline_catalog_use}
       root_path: /Workspace/Users/matthew.giglia@databricks.com/synthea-on-dbx/pipelines
