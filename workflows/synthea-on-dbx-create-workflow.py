@@ -92,23 +92,24 @@ latest_lts_version = w.clusters.select_spark_version(
 
 # COMMAND ----------
 
-if current_user.name.family_name is None:
-    current_user.name.family_name = (
-        current_user.user_name.split("@", 1)[0].strip(" ").replace(".", "_").lower()
-    )
-print(current_user.name.family_name)
+# if current_user.name.family_name is None:
+#     current_user.name.family_name = (
+#         current_user.user_name.split("@", 1)[0].strip(" ").replace(".", "_").lower()
+#     )
+# print(current_user.name.family_name)
 
 # COMMAND ----------
 
 # DBTITLE 1,Synthetic Data Deneration Job Inputs
 job_name = (
-    current_user.name.family_name.lower()
+    # current_user.name.family_name.lower()
     # + "-"
     # + current_user.id
+    current_user.as_dict()['displayName'].split("@",)[0].replace(".", "_")
     + "-synthea-data-generation"
 )
 job_cluster_key = (
-    current_user.name.family_name.lower() + "-" + current_user.id + "-synthea-data-gen"
+    current_user.as_dict()['displayName'].split("@",)[0].replace(".", "_") + "-synthea-data-gen"
 )
 job_description = f"Job to generate synthetic data for {current_user.user_name} in /Volumes/{catalog_name}/{schema_name}/synthetic_files_raw/ using the synthea library jar."
 
