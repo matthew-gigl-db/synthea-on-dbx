@@ -103,8 +103,8 @@ print(current_user.name.family_name)
 # DBTITLE 1,Synthetic Data Deneration Job Inputs
 job_name = (
     current_user.name.family_name.lower()
-    + "-"
-    + current_user.id
+    # + "-"
+    # + current_user.id
     + "-synthea-data-generation"
 )
 job_cluster_key = (
