@@ -71,6 +71,7 @@ dbutils.widgets.dropdown(
   ,[ "false"] # must be false until after sreverless moves to 16 LTS release
   ,"Serverless Job Mode"
 )
+dbutils.widgets.dropdown("run_job", "true", ["true", "false"], "Optional Run the Job")
 
 # COMMAND ----------
 
@@ -84,6 +85,7 @@ inject_bad_data = dbutils.widgets.get("inject_bad_data").lower()
 min_records = int(dbutils.widgets.get("min_records"))
 max_records = int(dbutils.widgets.get("max_records"))
 serverless = dbutils.widgets.get("serverless").lower()
+run_job = dbutils.widgets.get("run_job").lower()
 
 # COMMAND ----------
 
@@ -165,34 +167,40 @@ from time import sleep
 # COMMAND ----------
 
 # DBTITLE 1,Job Scheduler
-for i in range(0, number_of_job_runs):
-  if i == 0:
-    w.jobs.run_now_and_wait(
-      job_id = job_id
-      ,job_parameters = {
-        "catalog_name": catalog_name
-        ,"schema_name": schema_name
-        ,"create_landing_zone": create_landing_zone
-        ,"inject_bad_data": inject_bad_data
-      } 
-    )
-  else:
-    sleep(wait_time)
-    w.jobs.run_now_and_wait(
-      job_id = job_id
-      ,job_parameters = {
-        "catalog_name": catalog_name
-        ,"schema_name": schema_name
-        ,"create_landing_zone": create_landing_zone
-        ,"inject_bad_data": inject_bad_data
-      }
-    )
+if run_job == "false":
+  print("Skipping Job Run")
+else:
+  for i in range(0, number_of_job_runs):
+    if i == 0:
+      w.jobs.run_now_and_wait(
+        job_id = job_id
+        ,job_parameters = {
+          "catalog_name": catalog_name
+          ,"schema_name": schema_name
+          ,"create_landing_zone": create_landing_zone
+          ,"inject_bad_data": inject_bad_data
+        } 
+      )
+    else:
+      sleep(wait_time)
+      w.jobs.run_now_and_wait(
+        job_id = job_id
+        ,job_parameters = {
+          "catalog_name": catalog_name
+          ,"schema_name": schema_name
+          ,"create_landing_zone": create_landing_zone
+          ,"inject_bad_data": inject_bad_data
+        }
+      )
 
 # COMMAND ----------
 
 # DBTITLE 1,List Job Runs
-runs = w.jobs.list_runs(job_id=job_id)
-runs = [run.as_dict() for run in runs]
+if run_job == "false":
+  print("Job Run Skipped")
+else:
+  runs = w.jobs.list_runs(job_id=job_id)
+  runs = [run.as_dict() for run in runs]
 
 # COMMAND ----------
 
@@ -202,9 +210,12 @@ import pandas as pd
 # COMMAND ----------
 
 # DBTITLE 1,List to Pandas to PySpark DataFrame Conversion
-#create a pandas dataframe and then convert it to a pySpark dataframe
-runs_pandas = pd.DataFrame(runs)
-runs_pandas
+if run_job == "false":
+  print("Job Run Skipped")
+else:
+  #create a pandas dataframe and then convert it to a pySpark dataframe
+  runs_pandas = pd.DataFrame(runs)
+  runs_pandas
 
 # COMMAND ----------
 

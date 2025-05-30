@@ -1,6 +1,7 @@
 import dlt
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col
+from pyspark.sql.functions import col, row_number
+from pyspark.sql.window import Window
 
 class Bronze:
     def __init__(self, spark: SparkSession, catalog: str, schema: str, volume: str, volume_sub_path: str, resource_type: str):
@@ -37,8 +38,9 @@ class Bronze:
         file_size: BIGINT,
         file_block_start: BIGINT,
         file_block_length: BIGINT,
-        file_modification_time: TIMESTAMP > NOT NULL COMMENT 'Metadata about the file ingested.',ingest_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() COMMENT 'The date timestamp the file was ingested.',
-        value STRING COMMENT 'The raw CSV file contents.'
+        file_modification_time: TIMESTAMP > NOT NULL COMMENT 'Metadata about the file ingested.'
+        ,ingest_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() COMMENT 'The date timestamp the file was ingested.'
+        ,value STRING COMMENT 'The raw CSV file contents.'
       """
 
       if self.volume_sub_path == None:
@@ -58,7 +60,7 @@ class Bronze:
         },
         # path="<storage-location-path>",
         # partition_cols=["<partition-column>", "<partition-column>"],
-        # cluster_by = ["colname_1", "colname_2"],
+        cluster_by = ["file_metadata.file_path"],
         schema=schema_definition,
         # row_filter = "row-filter-clause",
         temporary=False
@@ -68,9 +70,9 @@ class Bronze:
           return (self.spark.readStream
             .format("cloudFiles")
             .option("cloudFiles.format", "text")
-            .option("clusterByAuto", "true")
             .load(volume_path)
-            .withColumn("file_metadata", col("_metadata"))
+            .selectExpr("_metadata as file_metadata", "*")
+            .filter(~col("value").startswith("Id,") & ~col("value").startswith("START,"))
           )
 
     def to_dict(self):
