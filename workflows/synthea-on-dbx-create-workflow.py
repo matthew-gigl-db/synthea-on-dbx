@@ -105,11 +105,11 @@ job_name = (
     # current_user.name.family_name.lower()
     # + "-"
     # + current_user.id
-    current_user.as_dict()['displayName'].split("@",)[0].replace(".", "_")
+    current_user.as_dict()['userName'].split("@",)[0].replace(".", "_")
     + "-synthea-data-generation"
 )
 job_cluster_key = (
-    current_user.as_dict()['displayName'].split("@",)[0].replace(".", "_") + "-synthea-data-gen"
+    current_user.as_dict()['userName'].split("@",)[0].replace(".", "_") + "-synthea-data-gen"
 )
 job_description = f"Job to generate synthetic data for {current_user.user_name} in /Volumes/{catalog_name}/{schema_name}/synthetic_files_raw/ using the synthea library jar."
 
