@@ -59,7 +59,7 @@ node_type_id
 # DBTITLE 1,Dashboard Widget Configuration
 dbutils.widgets.text("catalog_name", "")
 dbutils.widgets.text("schema_name", "synthea")
-dbutils.widgets.text("instance_pool_id", "", "Optional Instance Pool ID for the Cluster Spec")
+# dbutils.widgets.text("instance_pool_id", "", "Optional Instance Pool ID for the Cluster Spec")
 dbutils.widgets.text("number_of_job_runs", "1", "Number of times to run the job")
 dbutils.widgets.dropdown("create_landing_zone", "true", ["true", "false"], "Optional Create a landing zone")
 dbutils.widgets.dropdown("inject_bad_data", "true", ["true", "false"], "Optional injection of bad data to select files")
@@ -78,7 +78,7 @@ dbutils.widgets.dropdown("run_job", "true", ["true", "false"], "Optional Run the
 # DBTITLE 1,Retrieve Widget Inputs
 catalog_name = dbutils.widgets.get("catalog_name")
 schema_name = dbutils.widgets.get("schema_name")
-instance_pool_id = dbutils.widgets.get("instance_pool_id")
+# instance_pool_id = dbutils.widgets.get("instance_pool_id")
 number_of_job_runs = int(dbutils.widgets.get("number_of_job_runs"))
 create_landing_zone = dbutils.widgets.get("create_landing_zone").lower()
 inject_bad_data = dbutils.widgets.get("inject_bad_data").lower()
@@ -106,7 +106,6 @@ If create_landing_zone == True, the Databricks workflow created by this notebook
 Please note that is the catalog, schema, or Volume do not exist, the workflow notebooks will attempt to create them.  If the user does not have the appropriate permissions to create or use the inputted catalog, or create or use the inputted schema, the workflow will fail during execution.  Please adjust the inputted values and re-run this notebook. 
 
 Cluster Specification Details: 
-instance_pool_id = {instance_pool_id}
 node_type_id = {node_type_id}
 
 Number of times the Databricks workflow will be executed to simulate variability in patient record creation: number_of_job_runs = {number_of_job_runs}
@@ -123,7 +122,7 @@ post_job_result = dbutils.notebook.run(
     "catalog_name": catalog_name
     ,"schema_name": schema_name
     ,"create_landing_zone": create_landing_zone
-    ,"instance_pool_id": instance_pool_id
+    # ,"instance_pool_id": instance_pool_id
     ,"node_type_id": node_type_id
     ,"inject_bad_data": inject_bad_data
     ,"min_records": min_records
