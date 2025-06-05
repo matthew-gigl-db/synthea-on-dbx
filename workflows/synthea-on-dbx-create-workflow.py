@@ -235,29 +235,29 @@ if serverless == "true":
 else:
   cluster_spec = JobCluster.from_dict(cluster_spec_dict)
   # if instance_pool_id == "": 
-    cluster_spec = JobCluster(
-      job_cluster_key = job_cluster_key
-      ,new_cluster = ClusterSpec(
-        spark_version = latest_lts_version
-        ,spark_conf = {
-          "spark.master": "local[*, 4]",
-          "spark.databricks.cluster.profile": "singleNode"
-        }
-        ,custom_tags = {
-          "ResourceClass": "SingleNode"
-        }
-        ,spark_env_vars = {
-          "JNAME": "zulu17-ca-amd64"
-        }
-        ,data_security_mode = DataSecurityMode("SINGLE_USER")
-        ,runtime_engine = RuntimeEngine("STANDARD")
-        ,num_workers = 0
-        ,node_type_id = node_type_id
-        ,aws_attributes = AwsAttributes(
-          availability = AwsAvailability("ON_DEMAND")
-        )
-      )
-    )
+    # cluster_spec = JobCluster(
+    #   job_cluster_key = job_cluster_key
+    #   ,new_cluster = ClusterSpec(
+    #     spark_version = latest_lts_version
+    #     ,spark_conf = {
+    #       "spark.master": "local[*, 4]",
+    #       "spark.databricks.cluster.profile": "singleNode"
+    #     }
+    #     ,custom_tags = {
+    #       "ResourceClass": "SingleNode"
+    #     }
+    #     ,spark_env_vars = {
+    #       "JNAME": "zulu17-ca-amd64"
+    #     }
+    #     ,data_security_mode = DataSecurityMode("SINGLE_USER")
+    #     ,runtime_engine = RuntimeEngine("STANDARD")
+    #     ,num_workers = 0
+    #     ,node_type_id = node_type_id
+    #     ,aws_attributes = AwsAttributes(
+    #       availability = AwsAvailability("ON_DEMAND")
+    #     )
+    #   )
+    # )
   # else:
   #   cluster_spec = JobCluster(
   #     job_cluster_key = job_cluster_key
