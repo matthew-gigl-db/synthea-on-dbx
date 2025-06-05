@@ -17,9 +17,9 @@ dbutils.library.restartPython()
 # DBTITLE 1,Set Databricks Widgets
 dbutils.widgets.text("catalog_name", "")
 dbutils.widgets.text("schema_name", "synthea")
-dbutils.widgets.text(
-    "instance_pool_id", "", "Optional Instance Pool ID for the Cluster Spec"
-)
+# dbutils.widgets.text(
+#     "instance_pool_id", "", "Optional Instance Pool ID for the Cluster Spec"
+# )
 dbutils.widgets.text(
     "node_type_id",
     "i3.xlarge",
@@ -48,7 +48,7 @@ dbutils.widgets.text(name = "max_records", defaultValue="1000", label = "Maximum
 # DBTITLE 1,Get Widget Inputs
 catalog_name = dbutils.widgets.get("catalog_name")
 schema_name = dbutils.widgets.get("schema_name")
-instance_pool_id = dbutils.widgets.get("instance_pool_id")
+# instance_pool_id = dbutils.widgets.get("instance_pool_id")
 node_type_id = dbutils.widgets.get("node_type_id")
 create_landing_zone = dbutils.widgets.get("create_landing_zone").lower()
 inject_bad_data = dbutils.widgets.get("inject_bad_data").lower()
@@ -126,7 +126,6 @@ Job cluster key: {job_cluster_key}
 Job description: {job_description}
 
 Cluster Specification Details: 
-instance_pool_id = {instance_pool_id}
 node_type_id = {node_type_id}
 
 Note that node_type_id will only be used if an instance_pool_id is not set.
