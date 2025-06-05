@@ -17,9 +17,9 @@ dbutils.library.restartPython()
 # DBTITLE 1,Set Databricks Widgets
 dbutils.widgets.text("catalog_name", "")
 dbutils.widgets.text("schema_name", "synthea")
-dbutils.widgets.text(
-    "instance_pool_id", "", "Optional Instance Pool ID for the Cluster Spec"
-)
+# dbutils.widgets.text(
+#     "instance_pool_id", "", "Optional Instance Pool ID for the Cluster Spec"
+# )
 dbutils.widgets.text(
     "node_type_id",
     "i3.xlarge",
@@ -48,7 +48,7 @@ dbutils.widgets.text(name = "max_records", defaultValue="1000", label = "Maximum
 # DBTITLE 1,Get Widget Inputs
 catalog_name = dbutils.widgets.get("catalog_name")
 schema_name = dbutils.widgets.get("schema_name")
-instance_pool_id = dbutils.widgets.get("instance_pool_id")
+# instance_pool_id = dbutils.widgets.get("instance_pool_id")
 node_type_id = dbutils.widgets.get("node_type_id")
 create_landing_zone = dbutils.widgets.get("create_landing_zone").lower()
 inject_bad_data = dbutils.widgets.get("inject_bad_data").lower()
@@ -126,7 +126,6 @@ Job cluster key: {job_cluster_key}
 Job description: {job_description}
 
 Cluster Specification Details: 
-instance_pool_id = {instance_pool_id}
 node_type_id = {node_type_id}
 
 Note that node_type_id will only be used if an instance_pool_id is not set.
@@ -137,7 +136,15 @@ Note that node_type_id will only be used if an instance_pool_id is not set.
 
 # DBTITLE 1,Import Databricks Cluster Configuration Modules
 from databricks.sdk.service.jobs import JobCluster
-from databricks.sdk.service.compute import ClusterSpec, DataSecurityMode, RuntimeEngine, AwsAttributes, AwsAvailability
+from databricks.sdk.service.compute import (
+    ClusterSpec,
+    DataSecurityMode,
+    RuntimeEngine,
+    AwsAttributes,
+    AwsAvailability,
+    AzureAttributes,
+    AzureAvailability
+)
 
 # COMMAND ----------
 
@@ -157,57 +164,126 @@ print(f"The base path is: {base_path}")
 
 # COMMAND ----------
 
+workspace_url = spark.conf.get("spark.databricks.workspaceUrl")
+print("Workspace URL:", workspace_url)
+
+# COMMAND ----------
+
+if workspace_url.endswith("azuredatabricks.net"):
+  cluster_spec_dict = {
+    "job_cluster_key": f"{job_cluster_key}",
+    "new_cluster": {
+        "azure_attributes": {"availability": "ON_DEMAND_AZURE"},
+        "custom_tags": {"ResourceClass": "SingleNode"},
+        "data_security_mode": "SINGLE_USER",
+        "node_type_id": f"{node_type_id}",
+        "num_workers": 0,
+        "runtime_engine": "STANDARD",
+        "spark_conf": {
+            "spark.master": "local[*, 4]",
+            "spark.databricks.cluster.profile": "singleNode",
+        },
+        "spark_env_vars": {"JNAME": "zulu17-ca-amd64"},
+        "spark_version": f"{latest_lts_version}",
+      },
+  }
+elif workspace_url.endswith("cloud.databricks.com"):
+  cluster_spec_dict = {
+      "job_cluster_key": f"{job_cluster_key}",
+      "new_cluster": {
+          "aws_attributes": {"availability": "ON_DEMAND"},
+          "custom_tags": {"ResourceClass": "SingleNode"},
+          "data_security_mode": "SINGLE_USER",
+          "node_type_id": f"{node_type_id}",
+          "num_workers": 0,
+          "runtime_engine": "STANDARD",
+          "spark_conf": {
+              "spark.master": "local[*, 4]",
+              "spark.databricks.cluster.profile": "singleNode",
+          },
+          "spark_env_vars": {"JNAME": "zulu17-ca-amd64"},
+          "spark_version": f"{latest_lts_version}",
+      },
+  }
+else:
+  # not tested, please use with caution and raise a github issue if not working as expected
+  cluster_spec_dict = {
+      "job_cluster_key": f"{job_cluster_key}",
+      "new_cluster": {
+          "custom_tags": {"ResourceClass": "SingleNode"},
+          "data_security_mode": "SINGLE_USER",
+          "node_type_id": f"{node_type_id}",
+          "num_workers": 0,
+          "runtime_engine": "STANDARD",
+          "spark_conf": {
+              "spark.master": "local[*, 4]",
+              "spark.databricks.cluster.profile": "singleNode",
+          },
+          "spark_env_vars": {"JNAME": "zulu17-ca-amd64"},
+          "spark_version": f"{latest_lts_version}",
+      },
+  }
+
+cluster_spec_dict
+
+# COMMAND ----------
+
 # DBTITLE 1,Job Cluster Specification Creation
 if serverless == "true":
   cluster_spec = None
   job_cluster_key = None
 else:
-  if instance_pool_id == "": 
-    cluster_spec = JobCluster(
-      job_cluster_key = job_cluster_key
-      ,new_cluster = ClusterSpec(
-        spark_version = latest_lts_version
-        ,spark_conf = {
-          "spark.master": "local[*, 4]",
-          "spark.databricks.cluster.profile": "singleNode"
-        }
-        ,custom_tags = {
-          "ResourceClass": "SingleNode"
-        }
-        ,spark_env_vars = {
-          "JNAME": "zulu17-ca-amd64"
-        }
-        ,data_security_mode = DataSecurityMode("SINGLE_USER")
-        ,runtime_engine = RuntimeEngine("STANDARD")
-        ,num_workers = 0
-        ,node_type_id = node_type_id
-        ,aws_attributes = AwsAttributes(
-          availability = AwsAvailability("ON_DEMAND")
-        )
-      )
-    )
-  else:
-    cluster_spec = JobCluster(
-      job_cluster_key = job_cluster_key
-      ,new_cluster = ClusterSpec(
-        spark_version = latest_lts_version
-        ,spark_conf = {
-          "spark.master": "local[*, 4]",
-          "spark.databricks.cluster.profile": "singleNode"
-        }
-        ,custom_tags = {
-          "ResourceClass": "SingleNode"
-        }
-        ,spark_env_vars = {
-          "JNAME": "zulu17-ca-amd64"
-        }
-        ,instance_pool_id = instance_pool_id
-        ,driver_instance_pool_id = instance_pool_id
-        ,data_security_mode = DataSecurityMode("SINGLE_USER")
-        ,runtime_engine = RuntimeEngine("STANDARD")
-        ,num_workers = 0
-      )
-    )
+  cluster_spec = JobCluster.from_dict(cluster_spec_dict)
+  # if instance_pool_id == "": 
+    # cluster_spec = JobCluster(
+    #   job_cluster_key = job_cluster_key
+    #   ,new_cluster = ClusterSpec(
+    #     spark_version = latest_lts_version
+    #     ,spark_conf = {
+    #       "spark.master": "local[*, 4]",
+    #       "spark.databricks.cluster.profile": "singleNode"
+    #     }
+    #     ,custom_tags = {
+    #       "ResourceClass": "SingleNode"
+    #     }
+    #     ,spark_env_vars = {
+    #       "JNAME": "zulu17-ca-amd64"
+    #     }
+    #     ,data_security_mode = DataSecurityMode("SINGLE_USER")
+    #     ,runtime_engine = RuntimeEngine("STANDARD")
+    #     ,num_workers = 0
+    #     ,node_type_id = node_type_id
+    #     ,aws_attributes = AwsAttributes(
+    #       availability = AwsAvailability("ON_DEMAND")
+    #     )
+    #   )
+    # )
+  # else:
+  #   cluster_spec = JobCluster(
+  #     job_cluster_key = job_cluster_key
+  #     ,new_cluster = ClusterSpec(
+  #       spark_version = latest_lts_version
+  #       ,spark_conf = {
+  #         "spark.master": "local[*, 4]",
+  #         "spark.databricks.cluster.profile": "singleNode"
+  #       }
+  #       ,custom_tags = {
+  #         "ResourceClass": "SingleNode"
+  #       }
+  #       ,spark_env_vars = {
+  #         "JNAME": "zulu17-ca-amd64"
+  #       }
+  #       ,instance_pool_id = instance_pool_id
+  #       ,driver_instance_pool_id = instance_pool_id
+  #       ,data_security_mode = DataSecurityMode("SINGLE_USER")
+  #       ,runtime_engine = RuntimeEngine("STANDARD")
+  #       ,num_workers = 0
+  #     )
+  #   )
+
+# COMMAND ----------
+
+cluster_spec.as_dict()
 
 # COMMAND ----------
 
