@@ -17,6 +17,32 @@ targets:
     workspace:
       host: https://e2-demo-field-eng.cloud.databricks.com
 
+
+  hcsc_workshop:
+    mode: development
+    presets:
+      name_prefix: '[${bundle.target} ${var.schema_use}] ' 
+      pipelines_development: true # set development to true for pipelines
+      trigger_pause_status: PAUSED # set pause_status to PAUSED for all triggers and schedules
+      jobs_max_concurrent_runs: 1 # set max_concurrent runs to 1 for all jobs
+      source_linked_deployment: false # default is true normally for development
+      tags:
+        mlops_workshop: true
+        dev: kiara_koeppen
+        removeAfter: 20251231
+    variables:
+      catalog_use: datascience_${bundle.target}
+      schema_use: odl_instructor_1452233
+      model_timeout_minutes: 15
+      endpoint_name: ${bundle.target}_${var.schema_use}_customer_churn_endpoint
+      run_as_user: odl_instructor_1452233@databrickslabs.com
+    workspace:
+      host: https://dbc-08c9eac2-f2a7.cloud.databricks.com/
+      root_path: /Users/${var.run_as_user}/.bundle/${bundle.name}/${bundle.target}
+    run_as:
+      # see https://docs.databricks.com/dev-tools/bundles/permissions.html.
+      user_name: ${var.run_as_user}
+
   msk_demo:
     # The default target uses 'mode: development' to create a development copy.
     # - Deployed resources get prefixed with '[dev my_user_name]'
